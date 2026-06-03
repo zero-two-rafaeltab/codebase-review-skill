@@ -98,6 +98,7 @@ After scope approval, start with a lightweight orientation pass. Keep this bound
 Inspect only what helps answer the approved review question:
 
 - **Repository shape:** top-level directories, package/service boundaries, generated or vendored areas to ignore, and where the approved target lives.
+- On repositories with local build outputs or dependencies present, prefer tracked-file lists, manifest-aware searches, or ignore-aware searches before broad file listings. Explicitly exclude generated/dependency areas such as `node_modules`, `dist`, `build`, `.next`, and coverage outputs unless they are part of the approved scope.
 - **Project intent:** README, docs, comments, package metadata, or other nearby context that explains what the component is meant to do.
 - **Build and dependency hints:** manifests, lockfiles, module files, workspace config, and scripts that reveal frameworks, entry points, or dependency boundaries.
 - **Runtime and data flow clues:** routes, handlers, jobs, CLI entry points, configuration, database/schema files, adapters, or integration points connected to the approved scope.
