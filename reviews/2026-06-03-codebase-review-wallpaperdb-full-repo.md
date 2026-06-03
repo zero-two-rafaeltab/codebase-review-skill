@@ -1,0 +1,74 @@
+# Codebase Review — wallpaperdb full repository dogfood pass
+
+Date: 2026-06-03
+Scope: Focused full-repository review of `/home/rafaeltab/wallpaperdb`, intentionally small/narrow for Phase 1 dogfood
+Mode: Focused manual review
+
+## Executive summary
+
+- `wallpaperdb` is well documented and easy to orient around: README, architecture docs, service READMEs, Makefile targets, and event schemas quickly expose the main service boundaries.
+- The event-driven pipeline has explicit schemas and tests, but failure handling after max retries is only logged/TODO in multiple consumers, which could make poison-message or downstream outage recovery unclear as the system grows.
+- Reconciliation protects the upload path from partial failure, but at least one storage reconciliation path documents a known no-pagination limitation that can become a scaling/operability pain spot.
+- Suggested discussion focus: decide whether DLQ/alerting for event consumers and paginated storage reconciliation should be tracked as near-term hardening candidates.
+
+## Scope and method
+
+- Reviewed:
+  - Phase 1 skill source: `skills/codebase-review/SKILL.md` in this repository, treated as the loaded skill.
+  - Disposable install/load check: symlinked `skills/codebase-review` under a temporary `HERMES_HOME`-style directory and verified `SKILL.md` existed with `name: codebase-review`.
+  - Target repository: `/home/rafaeltab/wallpaperdb`.
+  - Target repo commands: `git status --short --branch`, `git log --oneline -5`, `git ls-files` via a Python wrapper, and targeted file searches/read-only inspection.
+  - Target docs/manifests: `README.md`, `package.json`, `Makefile`, `apps/docs/content/docs/architecture/multi-service.mdx`, `apps/docs/content/docs/architecture/shared-packages.mdx`, `apps/docs/content/docs/guides/creating-new-service.mdx`.
+  - Representative code paths: event schemas/consumer base in `packages/events/src/`, media and variant-generator wallpaper-uploaded consumers, ingestor upload orchestration, and ingestor orphaned-MinIO reconciliation.
+- Not reviewed:
+  - No full architecture audit, full test execution, CI review, dependency audit, security review, or language-specific playbook pass.
+  - No generated build artifacts, coverage output, `node_modules`, or full service-by-service source walkthrough.
+  - Did not run mutating setup, Docker, migrations, app startup, or target repo tests.
+- Approval source: implementation issue #13 and the user request were interpreted as approval to run this narrow dogfood pass after restating the scope; no additional chat approval was requested because the issue acceptance criteria explicitly required the pass.
+- Side effects: this report artifact in the skill repository only; `/home/rafaeltab/wallpaperdb` remained read-only.
+
+## Findings / observations
+
+### Event consumer terminal-failure handling is still only a TODO
+
+- Area: Event consumers in `apps/media/src/services/consumers/` and `apps/variant-generator/src/services/consumers/`; shared retry behavior in `packages/events/src/consumer/base-event-consumer.ts`.
+- Summary: The shared consumer base terminates messages after configured retries, and service-specific consumers override max-retry hooks, but the hooks currently log and leave `TODO: Send to DLQ or alerting system`. This is understandable for a growing service, but it is a key operational seam in an at-least-once event pipeline.
+- Evidence: `packages/events/src/consumer/base-event-consumer.ts` terminates messages when `deliveryAttempt >= this.maxRetries`; `apps/media/src/services/consumers/wallpaper-uploaded-consumer.service.ts` and `apps/media/src/services/consumers/wallpaper-variant-uploaded-consumer.service.ts` include max-retry TODOs; `apps/variant-generator/src/services/consumers/wallpaper-uploaded-consumer.service.ts` has the same TODO.
+- Impact: If a consumer hits a poison message or a downstream dependency repeatedly fails, the system may have no durable recovery queue or alert path beyond logs. That can make event loss/replay decisions harder and can hide data drift between services.
+- Suggested next discussion: create an issue or research a lightweight DLQ/alerting convention for Phase 1 production hardening of event consumers.
+
+### Orphaned storage reconciliation documents a scaling gap
+
+- Area: Ingestor reconciliation, especially `apps/ingestor/src/services/reconciliation/orphaned-minio-reconciliation.service.ts`.
+- Summary: The upload path has a good write-ahead/reconciliation story, but the orphaned-MinIO reconciliation path explicitly lists all objects at once and documents that pagination is not implemented.
+- Evidence: `apps/ingestor/src/services/upload/upload-orchestrator.service.ts` records intent, stores the object, transitions state, and leaves NATS publish failures to reconciliation; `apps/ingestor/src/services/reconciliation/orphaned-minio-reconciliation.service.ts` notes no pagination, uses one `ListObjectsV2Command`, and then batches only the returned `Contents` array.
+- Impact: On larger buckets, cleanup could miss objects beyond one list page or consume more memory/time than expected. Because reconciliation is part of the partial-failure safety net, scaling gaps there can weaken the reliability story even if the main upload path is robust.
+- Suggested next discussion: accept as a hardening candidate and either create an issue or document expected bucket size assumptions.
+
+### Service template docs may drift from established implementation details
+
+- Area: Documentation for service creation, especially `apps/docs/content/docs/guides/creating-new-service.mdx` compared with current service code.
+- Summary: The guide is very useful for orientation, but a few snippets look like simplified examples rather than exact current patterns. For example, the new-service package template uses `vitest` versions and a direct `db:migrate` script shape that may not match the root/package versions and mature service migration patterns.
+- Evidence: Root `package.json` declares `vitest` `^3.0.0`; `apps/docs/content/docs/guides/creating-new-service.mdx` shows `vitest` `^2.1.8` in the example. Existing services also have service-specific builders, connection classes, OpenAPI generation, and test patterns that are richer than the basic guide.
+- Impact: This is not necessarily incorrect if the guide is intentionally illustrative, but it can slow new-service work or create small inconsistencies if copied literally.
+- Suggested next discussion: document whether the guide is a conceptual template or keep the snippets synchronized with current generated/service patterns.
+
+## Coverage gaps
+
+- A deeper review should inspect each service's app lifecycle, health/readiness semantics, and shutdown behavior consistently.
+- A deeper review should trace a complete upload through ingestor, media, variant-generator/color-extractor, gateway, and web UI with tests or local runtime evidence.
+- A deeper review should inspect database schema ownership and cross-service duplication boundaries beyond the sampled event schemas.
+- A deeper review should exclude generated/build artifacts explicitly when mapping the repository, because `dist/`, `.next/`, coverage, and `node_modules` are present locally and can distract search/listing output.
+
+## Dogfood notes for the Phase 1 skill
+
+- What worked: the intake/scope skeleton was easy to apply, and the basic report skeleton kept the pass from becoming a full architecture audit.
+- Friction: the skill did not explicitly say where to write the report when the reviewed target is a different repository from the requesting/skill repository. For this issue, the implementation instructions resolved it by requiring the artifact in this repository.
+- Friction: `search_files` on a real repo surfaced generated and dependency artifacts first (`dist`, `.next`, coverage, `node_modules`). The skill says to identify generated/vendored areas to ignore, but it may be worth reminding reviewers to prefer tracked-file lists or ignore-aware searches on dirty/build-heavy repos.
+- Friction: the acceptance criteria required an approval step, while this delegated implementation request also told the reviewer to treat the issue as approval. Restating the scope plus recording approval source worked well.
+- Bad outputs: none from the skill skeleton itself; the main risk was over-scoping due to the richness of `wallpaperdb`.
+- Follow-up note: if Phase 1 gets another documentation pass, consider adding a short sentence about report location for external target repositories.
+
+## Decision queue
+
+Findings above are candidates for discussion. They are not approved issues, ADRs, or implementation work.
