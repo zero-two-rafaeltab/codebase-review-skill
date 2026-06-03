@@ -1,6 +1,6 @@
 ---
 name: codebase-review
-description: Use when performing a Phase 1 minimal manual codebase health review. Guides scope confirmation, read-only discovery, basic report writing, and concise executive-summary handoff without advanced orchestration.
+description: Use when performing a focused manual codebase health review. Guides intake, interpreted scope approval, strict read-only discovery, basic report writing, and concise executive-summary handoff without advanced orchestration.
 version: 0.1.0
 author: Zero Two / Rafael
 license: MIT
@@ -14,33 +14,80 @@ metadata:
 
 ## Overview
 
-This is the **minimal Phase 1 workflow** for a local Hermes codebase health review skill.
-It is intentionally thin: use it to guide a small or narrow manual review, write a basic report artifact, and give the user a concise executive summary.
+Use this skill to run a focused manual codebase health review. It guides the reviewer through intake, scope confirmation, read-only discovery, a basic report artifact, and a concise executive summary for the user.
 
-Discovery and decision-making are separate. During discovery, stay read-only except for report artifacts.
-Do not create issues, ADRs, commits, PR comments, or code changes unless the user starts a separate post-discovery workflow.
+Discovery and decision-making are separate. During discovery, stay read-only except for report artifacts. Do not create issues, ADRs, commits, PR comments, or code changes unless the user starts a separate post-discovery workflow.
 
 ## When to Use
 
 Use this skill when the user asks for a codebase health, architecture, maintainability, refactoring-opportunity, pain-spot, or risk review.
 
-Do not use this minimal Phase 1 workflow for:
+Typical trigger phrases include:
 
+- "review this codebase";
+- "look for architecture risks";
+- "find maintainability pain";
+- "what should we refactor?";
+- "where are the testing or documentation gaps?";
+- "inspect this package/domain/workflow/dependency usage."
+
+Do not use this workflow for:
+
+- implementing a requested code change;
+- debugging a specific failing test or production bug;
+- reviewing a PR diff as a code reviewer;
 - automated setup of review tooling;
 - full multi-agent orchestration;
 - language-specific review playbooks;
 - CI integration;
-- implementing fixes during discovery.
+- creating issues, ADRs, commits, PR comments, or code changes during discovery.
 
-Those are later-phase capabilities.
+Those are separate workflows.
 
-## Minimal Phase 1 Flow
+## Intake and Interpreted Scope
 
-1. **Confirm the target and scope.** Identify the repository, package, domain, feature path, or concern to review. If the user did not provide a narrow scope, propose one that is small enough for a manual Phase 1 pass.
-2. **Ask for go/no-go before discovery.** Summarize the proposed scope, review depth, expected artifact path, and side-effect boundary. Wait for approval before expensive review work.
-3. **Review read-only.** Inspect files, docs, tests, dependency manifests, and local commands only as needed for the approved scope. Treat command failures as diagnostic signal, not permission to fix.
-4. **Write a basic report artifact.** Put the report in a predictable local path such as `review/reviews/<YYYY-MM-DD>-codebase-review.md` unless the project already has a clearer review folder convention.
-5. **Reply with a concise executive summary.** Keep chat short. Link or point to the report file. Present findings as decision candidates, not accepted work.
+Before discovery work begins, propose an interpreted scope in chat and ask the user for go/no-go. Do not start expensive reading, command execution, report writing, or subagent work until the user approves.
+
+The scope proposal should be short and explicit:
+
+```text
+Proposed review scope:
+- Target: <repo/path/package/domain/workflow/concern>
+- Scope shape: <one of the supported scope shapes>
+- Review depth: focused manual pass
+- Discovery actions: read files/docs and run safe inspection commands only as needed
+- Report artifact: <planned report path>
+- Side-effect boundary: no code changes, commits, issues, ADRs, or PR comments during discovery
+
+Go/no-go?
+```
+
+If the user says no or corrects the scope, revise the proposal and ask again.
+If the user has already given an explicit scope and approval in the same request, restate the interpreted scope briefly before proceeding.
+
+## Supported Scope Shapes
+
+Use simple scope language. This workflow supports these scope shapes:
+
+| Scope shape | Use when | Example phrasing |
+| --- | --- | --- |
+| Full repository | The user wants a broad health pass across the whole repo. | "Full repository review of `~/app`." |
+| Package or module | The user names a package, directory, crate, service, or module. | "Package/module review of `src/billing`." |
+| Domain | The user names a business or technical domain that may span files. | "Domain review of authentication and sessions." |
+| Workflow | The user asks about an end-to-end user or system flow. | "Workflow review of image upload through processing." |
+| Horizontal concern | The user asks about a cross-cutting quality or architecture concern. | "Horizontal review of testing boundaries." |
+| Dependency/usage review | The user asks how a dependency, API, or internal abstraction is used. | "Dependency usage review of Prisma access patterns." |
+
+Keep ambiguous requests small enough to complete manually. Prefer a narrow package, domain, workflow, or concern over an unbounded deep review.
+
+## Manual Review Flow
+
+1. **Identify whether this workflow applies.** Confirm the request is a codebase health, architecture, maintainability, refactoring, pain-spot, or risk review rather than implementation/debugging.
+2. **Propose an interpreted scope.** Name the target, scope shape, depth, expected artifact path, and discovery side-effect boundary.
+3. **Ask for go/no-go before discovery.** Wait for approval before expensive review work. If the user rejects the proposal, adjust and ask again.
+4. **Review read-only.** Inspect files, docs, tests, dependency manifests, and local commands only as needed for the approved scope. Treat command failures as diagnostic signal, not permission to fix.
+5. **Write a basic report artifact.** Put the report in a predictable local path such as `review/reviews/<YYYY-MM-DD>-codebase-review.md` unless the project already has a clearer review folder convention.
+6. **Reply with a concise executive summary.** Keep chat short. Link or point to the report file. Present findings as decision candidates, not accepted work.
 
 ## Discovery Side-Effect Boundary
 
@@ -57,20 +104,34 @@ Not allowed during discovery:
 - GitHub issues;
 - ADRs or durable project decisions;
 - PR comments;
-- dependency, CI, or tooling changes.
+- dependency, CI, or tooling changes;
+- setup workflows or installing review tooling;
+- sizing subagents or launching advanced multi-agent orchestration.
 
 If the user wants action after the report, start a separate post-discovery decision or implementation workflow.
 
+## Out of Scope for This Workflow
+
+Do not expand a manual discovery review into other behavior unless the user explicitly starts a separate workflow. In particular, do not add or require:
+
+- setup tooling for target repositories;
+- normalized review commands;
+- language-specific playbooks;
+- cartography/sizing subagents;
+- adaptive multi-agent plans;
+- CI integration;
+- advanced severity, confidence, or evidence metadata.
+
 ## Basic Report Skeleton
 
-Use this skeleton for the minimal Phase 1 artifact:
+Use this skeleton for the review artifact:
 
 ```markdown
 # Codebase Review — <scope>
 
 Date: <YYYY-MM-DD>
 Scope: <approved scope>
-Mode: Minimal Phase 1 manual review
+Mode: Focused manual review
 
 ## Executive summary
 
@@ -113,9 +174,13 @@ After writing the report, keep the chat response short:
 
 ## Verification Checklist
 
-- [ ] Scope and go/no-go were approved before discovery.
+- [ ] The request matched a codebase health review trigger rather than implementation/debugging.
+- [ ] The interpreted scope was proposed before discovery.
+- [ ] The scope proposal used one of the supported scope shapes.
+- [ ] User go/no-go was received before discovery.
 - [ ] Discovery stayed read-only except for the report artifact.
 - [ ] No issues, ADRs, commits, PR comments, or code changes were created during discovery.
+- [ ] No setup, sizing-subagent, language-playbook, or CI workflow was introduced.
 - [ ] A basic report file was written.
 - [ ] Chat response stayed concise and pointed to the report.
 - [ ] Findings were framed as decision candidates.
