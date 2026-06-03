@@ -2,7 +2,7 @@
 
 This repository contains the goal documents for a local Hermes skill that supports explicit codebase health reviews, plus the first minimal installable skill package.
 
-The current implementation is intentionally small. It establishes the local skill package shape and a minimal focused manual review workflow; future work can add richer references and reporting guidance.
+The current implementation is intentionally small. It establishes the local skill package shape, a minimal focused manual review workflow, and basic report/finding output guidance.
 
 ## Install locally
 
