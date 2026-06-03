@@ -1,6 +1,6 @@
 ---
 name: codebase-review
-description: Use when performing a focused manual codebase health review. Guides intake, interpreted scope approval, strict read-only discovery, basic report writing, and concise executive-summary handoff without complex delegation.
+description: Use when performing a focused manual codebase health review. Guides intake, interpreted scope approval, strict read-only discovery, basic report writing, concise executive-summary handoff, and user-controlled post-discovery decisions without complex delegation.
 version: 0.1.0
 author: Zero Two / Rafael
 license: MIT
@@ -16,7 +16,7 @@ metadata:
 
 Use this skill to run a focused manual codebase health review. It guides the reviewer through intake, scope confirmation, read-only discovery, a basic report artifact, and a concise executive summary for the user.
 
-Discovery and decision-making are separate. During discovery, stay read-only except for report artifacts. Do not create issues, ADRs, commits, PR comments, or code changes unless the user starts a separate post-discovery workflow.
+Discovery and decision-making are separate. During discovery, stay read-only except for report artifacts. After discovery, help the user decide what to do with findings without automatically taking action.
 
 ## When to Use
 
@@ -89,6 +89,7 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 5. **Do a focused manual discovery pass.** Read the most relevant files and note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
 6. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention.
 7. **Reply with a concise executive summary.** Keep chat short. Link or point to the report file. Present findings as decision candidates, not accepted work.
+8. **Offer a post-discovery decision phase.** If the user wants to continue after the report, discuss findings one by one or as a short queue. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
 
 ## Repository and Context Inspection
 
@@ -117,7 +118,7 @@ Use this procedure for small repositories, a narrow package/module, a single wor
 6. **Look for pain spots and future-risk prevention.** Identify issues likely to slow future work, such as undocumented invariants, weak error handling, untested critical paths, brittle integration boundaries, dependency lock-in, or unclear extension points.
 7. **Separate findings from uncertainties.** Record evidence with file paths, docs, or command summaries. Label weak signals as observations or questions instead of overstating them.
 8. **Keep optional delegation light.** If the scope has a clearly separable area, you may ask another agent for a small read-only inspection of that area, but do not require or design a complex delegation plan.
-9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next discussion options such as accept, reject, research, document, plan, or fix later.
+9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next discussion options such as accept, reject, ignore, research, document, create an issue, plan a refactor, or fix later.
 
 ## Discovery Side-Effect Boundary
 
@@ -139,6 +140,32 @@ Not allowed during discovery:
 - separate sizing passes or complex delegated review plans.
 
 If the user wants action after the report, start a separate post-discovery decision or implementation workflow.
+
+## Post-Discovery Decision Phase
+
+The post-discovery decision phase begins only after the report artifact is written and the executive summary is delivered. Its purpose is to help the user interpret and triage findings; it is not part of discovery and should not be treated as approval to mutate the repository or project systems.
+
+In this phase, keep each finding as a decision candidate until the user chooses what to do. Useful user choices include:
+
+| Decision | Meaning |
+| --- | --- |
+| Accept | The user agrees the finding is valid enough to track or act on later. |
+| Reject | The user disagrees with the finding or considers it invalid. |
+| Ignore | The user accepts the observation may be true but chooses no follow-up now. |
+| Research | More investigation is needed before deciding. |
+| Document | Capture context or rationale in docs or a decision record in a separate workflow. |
+| Create an issue | Open or draft a selected tracking issue only after explicit user approval. |
+| Plan a refactor | Turn a selected finding into a refactoring plan in a separate planning workflow. |
+
+During decision discussion:
+
+- do not automatically create GitHub issues, ADRs, docs, commits, PR comments, or code changes from findings;
+- keep discovery assessment separate from the user's decision context;
+- if the user adds business, roadmap, ownership, migration, or operational context, record it as user-provided decision context rather than rewriting the original discovery evidence;
+- if the user adjusts priority or severity, label it as user-adjusted decision severity/context, distinct from the discovery assessment;
+- when an action is chosen, start or hand off to the appropriate separate workflow for that selected action.
+
+Do not introduce advanced finding metadata in this phase. Keep the discussion lightweight: finding, evidence, impact, user decision, and optional user-provided context are enough.
 
 ## Out of Scope for This Workflow
 
@@ -205,7 +232,7 @@ Keep this section to 2-4 bullets. State what matters most, why it matters, and w
 - Summary: <what appears to be happening>
 - Evidence: <file paths, command output summaries, or doc references>
 - Impact: <why this might matter>
-- Suggested next discussion: <accept/reject/research/document/plan/fix later>
+- Suggested next discussion: <accept/reject/ignore/research/document/create issue/plan refactor/fix later>
 
 ## Coverage gaps
 
@@ -225,7 +252,7 @@ Each finding should be a compact decision candidate, not an accepted task. Inclu
 - **Summary:** what appears to be happening in plain language.
 - **Evidence:** file paths, documentation references, or command-output summaries that support the observation.
 - **Impact:** why the pattern could matter for maintainability, architecture, delivery speed, reliability, or future change.
-- **Suggested next discussion:** a concrete decision path such as accept, reject, research, document, plan, or fix later.
+- **Suggested next discussion:** a concrete decision path such as accept, reject, ignore, research, document, create an issue, plan a refactor, or fix later.
 
 Do not add severity, confidence, evidence-strength, scoring, or other advanced metadata in this workflow. If a signal is weak, say so in the summary or evidence instead of introducing a richer rubric.
 
@@ -242,7 +269,7 @@ Executive summary:
 - <recommended discussion focus>
 
 These findings are decision candidates, not accepted work.
-Next options: <walk through findings / accept or reject candidates / create selected issues / plan follow-up / research deeper>
+Next options: <walk through findings / accept, reject, or ignore candidates / research deeper / document context / create selected issues / plan a refactor>
 ```
 
 Keep chat to the report path, 2-4 executive-summary bullets, the decision-candidate reminder, and clear next options. Do not paste the full finding list unless the user asks.
@@ -259,3 +286,5 @@ Keep chat to the report path, 2-4 executive-summary bullets, the decision-candid
 - [ ] A basic report file was written.
 - [ ] Chat response stayed concise and pointed to the report.
 - [ ] Findings were framed as decision candidates.
+- [ ] Any post-discovery discussion kept user decisions separate from discovery assessment.
+- [ ] No issues, ADRs, docs, refactor plans, or implementation work were created automatically from findings.
