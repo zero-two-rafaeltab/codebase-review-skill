@@ -2,7 +2,7 @@
 
 Create a local Hermes skill, distributed from a GitHub repository, that guides agents through explicit codebase health reviews focused on architecture, maintainability, refactoring opportunities, pain spots, and prevention of future issues.
 
-This repository currently documents the desired outcome and constraints. It intentionally avoids implementation details for the skill itself.
+This repository contains historical goal context plus the initial minimal local skill package. Goal documents may describe broader future capabilities; the current shipped workflow is defined in skills/codebase-review/SKILL.md.
 
 ## What we want to achieve
 
@@ -22,12 +22,13 @@ Discovery and decision-making are separate.
 
 A review should discover and document findings, not immediately create issues, write ADRs, refactor code, or mutate project workflow. After discovery, the user decides what to do with each finding.
 
-## Non-goals for this repository right now
+## Current package scope
 
-- No actual Hermes skill implementation.
-- No skill templates.
-- No install scripts.
-- No review command setup.
-- No language playbooks.
-- No CI integration.
-- No GitHub issues created from these requirements.
+The current shipped skill is intentionally minimal. It does not include:
+
+- skill templates;
+- install scripts;
+- review command setup;
+- language playbooks;
+- CI integration;
+- GitHub issues created from these requirements.

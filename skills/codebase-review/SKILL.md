@@ -1,6 +1,6 @@
 ---
 name: codebase-review
-description: Use when performing a focused manual codebase health review. Guides intake, interpreted scope approval, strict read-only discovery, basic report writing, and concise executive-summary handoff without advanced orchestration.
+description: Use when performing a focused manual codebase health review. Guides intake, interpreted scope approval, strict read-only discovery, basic report writing, and concise executive-summary handoff without complex delegation.
 version: 0.1.0
 author: Zero Two / Rafael
 license: MIT
@@ -37,7 +37,7 @@ Do not use this workflow for:
 - debugging a specific failing test or production bug;
 - reviewing a PR diff as a code reviewer;
 - automated setup of review tooling;
-- full multi-agent orchestration;
+- complex delegated review planning;
 - language-specific review playbooks;
 - CI integration;
 - creating issues, ADRs, commits, PR comments, or code changes during discovery.
@@ -92,7 +92,7 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 
 ## Repository and Context Inspection
 
-After scope approval, start with a lightweight orientation pass. Keep this bounded to the approved target; do not turn it into whole-repository cartography unless the approved scope is the whole repository.
+After scope approval, start with a lightweight orientation pass. Keep this bounded to the approved target; do not turn it into a whole-repository mapping exercise unless the approved scope is the whole repository.
 
 Inspect only what helps answer the approved review question:
 
@@ -116,7 +116,7 @@ Use this procedure for small repositories, a narrow package/module, a single wor
 5. **Look for maintainability and refactoring signals.** Note hard-to-change files, repeated logic, naming mismatches, oversized modules, hidden conventions, fragile configuration, missing seams for tests, or code that requires broad edits for small behavior changes.
 6. **Look for pain spots and future-risk prevention.** Identify issues likely to slow future work, such as undocumented invariants, weak error handling, untested critical paths, brittle integration boundaries, dependency lock-in, or unclear extension points.
 7. **Separate findings from uncertainties.** Record evidence with file paths, docs, or command summaries. Label weak signals as observations or questions instead of overstating them.
-8. **Keep optional delegation light.** If the scope has a clearly separable area, you may ask another agent for a small read-only inspection of that area, but do not require or design a complex multi-agent plan.
+8. **Keep optional delegation light.** If the scope has a clearly separable area, you may ask another agent for a small read-only inspection of that area, but do not require or design a complex delegation plan.
 9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next discussion options such as accept, reject, research, document, plan, or fix later.
 
 ## Discovery Side-Effect Boundary
@@ -136,7 +136,7 @@ Not allowed during discovery:
 - PR comments;
 - dependency, CI, or tooling changes;
 - setup workflows or installing review tooling;
-- sizing subagents or launching advanced multi-agent orchestration.
+- separate sizing passes or complex delegated review plans.
 
 If the user wants action after the report, start a separate post-discovery decision or implementation workflow.
 
@@ -147,8 +147,8 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - setup tooling for target repositories;
 - normalized review commands;
 - language-specific playbooks;
-- cartography/sizing subagents;
-- adaptive multi-agent plans;
+- separate sizing or mapping workflows;
+- complex delegated review plans;
 - CI integration;
 - advanced severity, confidence, or evidence metadata.
 
@@ -210,7 +210,7 @@ After writing the report, keep the chat response short:
 - [ ] User go/no-go was received before discovery.
 - [ ] Discovery stayed read-only except for the report artifact.
 - [ ] No issues, ADRs, commits, PR comments, or code changes were created during discovery.
-- [ ] No setup, sizing-subagent, language-playbook, or CI workflow was introduced.
+- [ ] No setup, separate sizing/mapping, language-playbook, or CI workflow was introduced.
 - [ ] A basic report file was written.
 - [ ] Chat response stayed concise and pointed to the report.
 - [ ] Findings were framed as decision candidates.
