@@ -13,9 +13,15 @@ Mode: Focused manual review
 
 ## Scope and method
 
+- Interpreted scope: run one intentionally narrow full-repository dogfood pass against `/home/rafaeltab/wallpaperdb` using the Phase 1 `codebase-review` skill, produce only a report artifact in this skill repository, and avoid target-repository mutation or broad implementation work.
+- Approval source: implementation issue #13 plus the delegated user request were interpreted as approval to proceed after restating that scope; no additional chat approval was requested because the issue acceptance criteria explicitly required this dogfood pass.
+- Skill availability/load verification:
+  - Installed the local skill into a disposable `HERMES_HOME` by copying `skills/codebase-review/SKILL.md` to `$TMP_HOME/skills/codebase-review/SKILL.md`.
+  - `HERMES_HOME="$TMP_HOME" hermes skills list --source local --enabled-only` reported `codebase-review` as a local enabled skill (`0 hub-installed, 0 builtin, 1 local — 1 enabled shown`).
+  - `HERMES_HOME="$TMP_HOME" hermes prompt-size --json` reported a non-empty `skills_index` (`141` chars / `141` bytes), confirming Hermes indexed the disposable local skill for prompt construction.
+  - A live `hermes chat --skills codebase-review ...` smoke command resolved the skill name but stopped before model execution because the disposable home had no inference provider configured (`No inference provider configured`). A negative control with `--skills not-a-skill` failed earlier with `Error: Unknown skill(s): not-a-skill`, so the successful resolution of `codebase-review` was real skill availability validation, not just a filesystem check.
 - Reviewed:
-  - Phase 1 skill source: `skills/codebase-review/SKILL.md` in this repository, treated as the loaded skill.
-  - Disposable install/load check: symlinked `skills/codebase-review` under a temporary `HERMES_HOME`-style directory and verified `SKILL.md` existed with `name: codebase-review`.
+  - Phase 1 skill source: `skills/codebase-review/SKILL.md` in this repository.
   - Target repository: `/home/rafaeltab/wallpaperdb`.
   - Target repo commands: `git status --short --branch`, `git log --oneline -5`, `git ls-files` via a Python wrapper, and targeted file searches/read-only inspection.
   - Target docs/manifests: `README.md`, `package.json`, `Makefile`, `apps/docs/content/docs/architecture/multi-service.mdx`, `apps/docs/content/docs/architecture/shared-packages.mdx`, `apps/docs/content/docs/guides/creating-new-service.mdx`.
@@ -24,7 +30,6 @@ Mode: Focused manual review
   - No full architecture audit, full test execution, CI review, dependency audit, security review, or language-specific playbook pass.
   - No generated build artifacts, coverage output, `node_modules`, or full service-by-service source walkthrough.
   - Did not run mutating setup, Docker, migrations, app startup, or target repo tests.
-- Approval source: implementation issue #13 and the user request were interpreted as approval to run this narrow dogfood pass after restating the scope; no additional chat approval was requested because the issue acceptance criteria explicitly required the pass.
 - Side effects: this report artifact in the skill repository only; `/home/rafaeltab/wallpaperdb` remained read-only.
 
 ## Findings / observations
@@ -35,7 +40,7 @@ Mode: Focused manual review
 - Summary: The shared consumer base terminates messages after configured retries, and service-specific consumers override max-retry hooks, but the hooks currently log and leave `TODO: Send to DLQ or alerting system`. This is understandable for a growing service, but it is a key operational seam in an at-least-once event pipeline.
 - Evidence: `packages/events/src/consumer/base-event-consumer.ts` terminates messages when `deliveryAttempt >= this.maxRetries`; `apps/media/src/services/consumers/wallpaper-uploaded-consumer.service.ts` and `apps/media/src/services/consumers/wallpaper-variant-uploaded-consumer.service.ts` include max-retry TODOs; `apps/variant-generator/src/services/consumers/wallpaper-uploaded-consumer.service.ts` has the same TODO.
 - Impact: If a consumer hits a poison message or a downstream dependency repeatedly fails, the system may have no durable recovery queue or alert path beyond logs. That can make event loss/replay decisions harder and can hide data drift between services.
-- Suggested next discussion: create an issue or research a lightweight DLQ/alerting convention for Phase 1 production hardening of event consumers.
+- Suggested next discussion: create an issue or research a lightweight DLQ/alerting convention for event-consumer production hardening.
 
 ### Orphaned storage reconciliation documents a scaling gap
 
@@ -64,7 +69,7 @@ Mode: Focused manual review
 
 - What worked: the intake/scope skeleton was easy to apply, and the basic report skeleton kept the pass from becoming a full architecture audit.
 - Friction: the skill did not explicitly say where to write the report when the reviewed target is a different repository from the requesting/skill repository. For this issue, the implementation instructions resolved it by requiring the artifact in this repository.
-- Friction: `search_files` on a real repo surfaced generated and dependency artifacts first (`dist`, `.next`, coverage, `node_modules`). The skill says to identify generated/vendored areas to ignore, but it may be worth reminding reviewers to prefer tracked-file lists or ignore-aware searches on dirty/build-heavy repos.
+- Friction addressed in the skill: `search_files` on a real repo surfaced generated and dependency artifacts first (`dist`, `.next`, coverage, `node_modules`). The skill now reminds reviewers to prefer tracked-file lists, manifest-aware searches, or ignore-aware searches on dirty/build-heavy repos and to explicitly exclude generated/dependency areas unless in scope.
 - Friction: the acceptance criteria required an approval step, while this delegated implementation request also told the reviewer to treat the issue as approval. Restating the scope plus recording approval source worked well.
 - Bad outputs: none from the skill skeleton itself; the main risk was over-scoping due to the richness of `wallpaperdb`.
 - Follow-up note: if Phase 1 gets another documentation pass, consider adding a short sentence about report location for external target repositories.
