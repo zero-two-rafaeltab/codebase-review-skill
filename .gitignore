@@ -1,0 +1,8 @@
+# Local/editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.log
