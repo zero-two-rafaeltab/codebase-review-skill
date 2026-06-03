@@ -118,7 +118,7 @@ Use this procedure for small repositories, a narrow package/module, a single wor
 6. **Look for pain spots and future-risk prevention.** Identify issues likely to slow future work, such as undocumented invariants, weak error handling, untested critical paths, brittle integration boundaries, dependency lock-in, or unclear extension points.
 7. **Separate findings from uncertainties.** Record evidence with file paths, docs, or command summaries. Label weak signals as observations or questions instead of overstating them.
 8. **Keep optional delegation light.** If the scope has a clearly separable area, you may ask another agent for a small read-only inspection of that area, but do not require or design a complex delegation plan.
-9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next discussion options such as accept, reject, ignore, research, document, create an issue, plan a refactor, or fix later.
+9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next discussion options such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
 
 ## Discovery Side-Effect Boundary
 
@@ -154,7 +154,7 @@ In this phase, keep each finding as a decision candidate until the user chooses 
 | Ignore | The user accepts the observation may be true but chooses no follow-up now. |
 | Research | More investigation is needed before deciding. |
 | Document | Capture context or rationale in docs or a decision record in a separate workflow. |
-| Create an issue | Open or draft a selected tracking issue only after explicit user approval. |
+| Create an issue | Select a finding for issue creation; open or draft the tracking issue only in a separate workflow after explicit user approval. |
 | Plan a refactor | Turn a selected finding into a refactoring plan in a separate planning workflow. |
 
 During decision discussion:
@@ -232,7 +232,7 @@ Keep this section to 2-4 bullets. State what matters most, why it matters, and w
 - Summary: <what appears to be happening>
 - Evidence: <file paths, command output summaries, or doc references>
 - Impact: <why this might matter>
-- Suggested next discussion: <accept/reject/ignore/research/document/create issue/plan refactor/fix later>
+- Suggested next discussion: <accept/reject/ignore/research/document/create an issue/plan a refactor>
 
 ## Coverage gaps
 
@@ -252,7 +252,7 @@ Each finding should be a compact decision candidate, not an accepted task. Inclu
 - **Summary:** what appears to be happening in plain language.
 - **Evidence:** file paths, documentation references, or command-output summaries that support the observation.
 - **Impact:** why the pattern could matter for maintainability, architecture, delivery speed, reliability, or future change.
-- **Suggested next discussion:** a concrete decision path such as accept, reject, ignore, research, document, create an issue, plan a refactor, or fix later.
+- **Suggested next discussion:** a concrete decision path such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
 
 Do not add severity, confidence, evidence-strength, scoring, or other advanced metadata in this workflow. If a signal is weak, say so in the summary or evidence instead of introducing a richer rubric.
 
@@ -269,7 +269,7 @@ Executive summary:
 - <recommended discussion focus>
 
 These findings are decision candidates, not accepted work.
-Next options: <walk through findings / accept, reject, or ignore candidates / research deeper / document context / create selected issues / plan a refactor>
+Next options: <walk through findings / accept, reject, or ignore candidates / research deeper / document context / create an issue for a selected finding / plan a refactor>
 ```
 
 Keep chat to the report path, 2-4 executive-summary bullets, the decision-candidate reminder, and clear next options. Do not paste the full finding list unless the user asks.
