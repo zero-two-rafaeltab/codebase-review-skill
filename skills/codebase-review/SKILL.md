@@ -87,7 +87,7 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 3. **Ask for go/no-go before discovery.** Wait for approval before expensive review work. If the user rejects the proposal, adjust and ask again.
 4. **Inspect the repository context.** Build a small map of only the approved scope before judging it. See the inspection checklist below.
 5. **Do a focused manual discovery pass.** Read the most relevant files and note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
-6. **Write a basic report artifact.** Put the report in a predictable local path such as `review/reviews/<YYYY-MM-DD>-codebase-review.md` unless the project already has a clearer review folder convention.
+6. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention.
 7. **Reply with a concise executive summary.** Keep chat short. Link or point to the report file. Present findings as decision candidates, not accepted work.
 
 ## Repository and Context Inspection
@@ -152,6 +152,18 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - CI integration;
 - advanced severity, confidence, or evidence metadata.
 
+## Basic Report Artifact
+
+Write one Markdown report for each review. Prefer this path pattern unless the repository already has an obvious review artifact convention:
+
+```text
+reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md
+```
+
+Use a short lowercase scope slug such as `full-repo`, `auth-workflow`, or `src-billing`. If a same-day report already exists for the same scope, append a short suffix such as `-2` or `-1430`.
+
+The report is the durable handoff. Chat should point to it rather than copying the full details.
+
 ## Basic Report Skeleton
 
 Use this skeleton for the review artifact:
@@ -168,6 +180,8 @@ Mode: Focused manual review
 - <top observation or finding>
 - <top risk or pain spot>
 - <recommended discussion focus>
+
+Keep this section to 2-4 bullets. State what matters most, why it matters, and what discussion would unblock a decision.
 
 ## Scope and method
 
@@ -194,13 +208,36 @@ Mode: Focused manual review
 Findings above are candidates for discussion. They are not approved issues, ADRs, or implementation work.
 ```
 
+## Basic Finding Format
+
+Each finding should be a compact decision candidate, not an accepted task. Include only these fields:
+
+- **Title:** concise name for the candidate finding.
+- **Area:** component, path, workflow, dependency, or concern affected.
+- **Summary:** what appears to be happening in plain language.
+- **Evidence:** file paths, documentation references, or command-output summaries that support the observation.
+- **Impact:** why the pattern could matter for maintainability, architecture, delivery speed, reliability, or future change.
+- **Suggested next discussion:** a concrete decision path such as accept, reject, research, document, plan, or fix later.
+
+Do not add severity, confidence, evidence-strength, scoring, or other advanced metadata in this workflow. If a signal is weak, say so in the summary or evidence instead of introducing a richer rubric.
+
 ## Chat Summary Format
 
 After writing the report, keep the chat response short:
 
-1. Report path.
-2. 2-4 bullets for the most important observations.
-3. Clear next options, such as walking through findings, accepting/rejecting candidates, creating selected issues, planning a refactor, or doing deeper research.
+```text
+Report: <path/to/report.md>
+
+Executive summary:
+- <most important observation>
+- <most important risk or pain spot>
+- <recommended discussion focus>
+
+These findings are decision candidates, not accepted work.
+Next options: <walk through findings / accept or reject candidates / create selected issues / plan follow-up / research deeper>
+```
+
+Keep chat to the report path, 2-4 executive-summary bullets, the decision-candidate reminder, and clear next options. Do not paste the full finding list unless the user asks.
 
 ## Verification Checklist
 
