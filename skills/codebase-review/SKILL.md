@@ -103,7 +103,7 @@ Inspect only what helps answer the approved review question:
 - **Tests and examples:** test files, fixtures, examples, or snapshots that show expected behavior and coverage gaps.
 - **Recent local context when cheap:** git status and recent commits can reveal active churn, but do not rely on churn as a required scoring system.
 
-Safe inspection commands are allowed when useful, for example `git status --short`, `git log --oneline -5`, file searches, tree/listing commands, or existing test/build command names. Treat failures or missing commands as context; do not fix them during discovery.
+Safe inspection commands are allowed when useful, for example `git status --short`, `git log --oneline -5`, file searches, tree/listing commands, or inspection of existing test/build command names in manifests or scripts. Treat failures or missing commands as context; do not fix them during discovery.
 
 ## Focused Manual Discovery Procedure
 
