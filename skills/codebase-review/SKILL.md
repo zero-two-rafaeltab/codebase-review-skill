@@ -187,6 +187,8 @@ Write one Markdown report for each review. Prefer this path pattern unless the r
 reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md
 ```
 
+If the target being reviewed is a different repository from the repository or workspace where the user asked for the review artifact, state the chosen artifact location in the scope proposal and write the report there unless the user directs otherwise.
+
 Use a short lowercase scope slug such as `full-repo`, `auth-workflow`, or `src-billing`. If a same-day report already exists for the same scope, append a short suffix such as `-2` or `-1430`.
 
 The report is the durable handoff. Chat should point to it rather than copying the full details.
