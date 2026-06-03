@@ -164,6 +164,14 @@ Use a short lowercase scope slug such as `full-repo`, `auth-workflow`, or `src-b
 
 The report is the durable handoff. Chat should point to it rather than copying the full details.
 
+Minimum output contract:
+
+- create exactly one primary Markdown report artifact for the review;
+- include a 2-4 bullet executive summary near the top of the report;
+- include compact findings or observations using the basic finding fields below;
+- state in the report that findings are decision candidates, not accepted work;
+- keep advanced severity, confidence, scoring, and evidence-strength metadata out of the artifact.
+
 ## Basic Report Skeleton
 
 Use this skeleton for the review artifact:
