@@ -42,6 +42,7 @@ A cartography subagent should return the normal cartography summary plus this ma
 - review lens `cartography`;
 - files/docs and commands actually inspected;
 - discovered artifacts written, if any;
+- findings/observations emitted, or none;
 - uncertainties and out-of-scope areas;
 - inherited/unverified context;
 - coverage confidence.
