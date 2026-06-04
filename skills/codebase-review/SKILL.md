@@ -89,7 +89,7 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 5. **Do a focused manual discovery pass.** Read the most relevant files and note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
 6. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention. Start the report with triage information: severity counts, top findings, main pain sources, notable caveats, and links or anchors to detailed findings.
 7. **Reply with a concise executive summary.** Keep chat short and progressively disclosed. Include severity counts, 1-3 top findings or pain sources, notable confidence/evidence caveats, and a link or pointer to the report. Leave detailed evidence in the artifact. Present findings as decision candidates, not accepted work.
-8. **Offer a post-discovery decision phase.** If the user wants to continue after the report, discuss findings one by one or as a short queue. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
+8. **Offer a post-discovery decision phase.** If the user wants to continue after the report, walk through the decision queue one item at a time or in a short batch. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
 
 ## Repository and Context Inspection
 
@@ -119,7 +119,7 @@ Use this procedure for small repositories, a narrow package/module, a single wor
 6. **Look for pain spots and future-risk prevention.** Identify issues likely to slow future work, such as undocumented invariants, weak error handling, untested critical paths, brittle integration boundaries, dependency lock-in, or unclear extension points. Do not increase severity for possible future work unless the user explicitly supplied that roadmap, migration, business, or operational context during intake or scope approval.
 7. **Classify findings without mixing concepts.** Record evidence with file paths, docs, command summaries, and a cheap churn signal when available. Use the finding taxonomy below to label severity, confidence, and evidence strength separately. Route weak signals to Observation or low-confidence findings instead of overstating them.
 8. **Keep optional delegation light.** If the scope has a clearly separable area, you may ask another agent for a small read-only inspection of that area, but do not require or design a complex delegation plan.
-9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next decisions such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
+9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next decisions such as accept, reject or ignore, create an issue, document a decision, launch deeper research, revise severity, or plan/implement separately.
 
 ## Discovery Side-Effect Boundary
 
@@ -194,12 +194,12 @@ In this phase, keep each finding as a decision candidate until the user chooses 
 | Decision | Meaning |
 | --- | --- |
 | Accept | The user agrees the finding is valid enough to track or act on later. |
-| Reject | The user disagrees with the finding or considers it invalid. |
-| Ignore | The user accepts the observation may be true but chooses no follow-up now. |
-| Research | More investigation is needed before deciding. |
-| Document | Capture context or rationale in docs or a decision record in a separate workflow. |
+| Reject / ignore | The user disagrees with the finding, considers it invalid, or chooses no follow-up now. |
 | Create an issue | Select a finding for issue creation; open or draft the tracking issue only in a separate workflow after explicit user approval. |
-| Plan a refactor | Turn a selected finding into a refactoring plan in a separate planning workflow. |
+| Document an ADR / decision | Capture context or rationale in docs or a decision record only in a separate workflow after explicit user approval. |
+| Launch deeper research | Run a separate investigation when discovery evidence is incomplete or context-sensitive. |
+| Revise severity | Adjust decision-phase severity using user-provided business, roadmap, ownership, migration, or operational context that was not available during discovery. Keep this separate from the original discovery severity. |
+| Plan / implement separately | Turn a selected finding into a plan or implementation task only in a separate workflow after explicit user approval. |
 
 During decision discussion:
 
@@ -244,7 +244,8 @@ Minimum output contract:
 - include compact findings or observations using the basic finding fields below;
 - state in the report that findings are decision candidates, not accepted work;
 - include severity, confidence, evidence strength, impact, and suggested next decisions on findings without calculating an overall health score or assigning a global status label;
-- include a severity justification, evidence references or an explicit weak-evidence statement, and a churn signal on each finding.
+- include a severity justification, evidence references or an explicit weak-evidence statement, and a churn signal on each finding;
+- include a decision queue that lists findings needing user decisions and repeats enough metadata to triage without rereading every detail.
 
 ## Basic Report Skeleton
 
@@ -314,6 +315,15 @@ Use `F-###` IDs for supported findings and `O-###` IDs for observations. Keep th
 ## Decision queue
 
 Findings above are candidates for discussion. They are not approved issues, ADRs, or implementation work.
+
+Use this queue to decide what to do next. Keep discovery conclusions separate from user-provided decision context; if context changes priority, record it as a decision-phase adjustment rather than silently rewriting the original finding.
+
+| Ref | Severity | Confidence | Evidence strength | Impact | Suggested next decisions |
+| --- | --- | --- | --- | --- | --- |
+| [F-001](#f-001-finding-title) | <Critical/High/Medium/Low> | <High/Medium/Low> | <strongest evidence category or explicit weak-evidence note> | <one-line impact> | <accept; reject/ignore; create issue; document ADR/decision; launch deeper research; revise severity; plan/implement separately> |
+| [O-001](#o-001-observation-title) | Observation | <High/Medium/Low> | <strongest evidence category or explicit weak-evidence note> | <one-line impact or research value> | <accept as context; reject/ignore; launch deeper research; document decision; revise severity if user context supports promotion> |
+
+If there are no findings or observations that need a user decision, write `No decision queue items.` and briefly say why.
 ```
 
 ## Basic Finding Format
@@ -331,7 +341,7 @@ Each finding should be a compact decision candidate, not an accepted task. Inclu
 - **Summary:** what appears to be happening in plain language.
 - **Evidence:** file paths, documentation references, or command-output summaries that support the observation. If evidence is weak, state that directly, for example `Weak evidence: single sampled call site; no tests or history checked`.
 - **Impact:** why the pattern could matter for maintainability, architecture, delivery speed, reliability, or future change.
-- **Suggested next decisions:** concrete decision paths such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
+- **Suggested next decisions:** concrete decision paths such as accept, reject/ignore, create an issue, document an ADR/decision, launch deeper research, revise severity, or plan/implement separately.
 
 Do not add an overall health score, pass/fail result, or global project status label. Summarize triage with counts by severity instead. If a signal is weak, use Observation or Low confidence and state the uncertainty in the summary or evidence. Keep Observations visibly distinct from better-supported findings: Observations are context or research prompts, while findings assert project pain supported by evidence.
 
@@ -349,7 +359,7 @@ Executive summary:
 - Caveats: <low-confidence or weak-evidence notes; point to observations instead of overstating them>.
 
 These findings are decision candidates, not accepted work.
-Next options: <walk through findings / accept, reject, or ignore candidates / research deeper / document context / create an issue for a selected finding / plan a refactor>
+Next options: <walk through the decision queue / accept, reject, or ignore candidates / create an issue for a selected finding / document an ADR or decision / launch deeper research / revise severity with user context / plan or implement separately>
 ```
 
 Keep chat to the report path, 2-4 executive-summary bullets, the decision-candidate reminder, and clear next options. The bullets may mention only the top 1-3 finding IDs/titles and should point to the report for details. Do not paste the full finding list unless the user asks.
@@ -376,4 +386,6 @@ Keep chat to the report path, 2-4 executive-summary bullets, the decision-candid
 - [ ] Speculative future work did not affect discovery severity unless the user explicitly supplied that context during intake or scope approval.
 - [ ] No arbitrary overall health score or global status label was introduced.
 - [ ] Any post-discovery discussion kept user decisions separate from discovery assessment and allowed user-adjusted severity after added future-work or business context.
+- [ ] The report included a decision queue or equivalent section listing findings that need user decisions with finding reference, severity, confidence, evidence strength, impact, and suggested next decisions.
+- [ ] Decision options included accept, reject/ignore, create issue, document an ADR/decision, launch deeper research, revise severity, and plan/implement separately.
 - [ ] No issues, ADRs, docs, refactor plans, or implementation work were created automatically from findings.
