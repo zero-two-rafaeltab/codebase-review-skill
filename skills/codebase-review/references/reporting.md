@@ -27,6 +27,8 @@ Minimum output contract:
 - include severity, confidence, evidence strength, impact, and suggested next decisions on findings without calculating an overall health score or assigning a global status label;
 - include a severity justification, evidence references or an explicit weak-evidence statement, and a churn signal on each finding;
 - include delegated subagent manifests directly in the report or link to a small nearby manifest artifact when subagents were used;
+- when specialist subagents were used, synthesize from their manifests, slice reports, and emitted findings/observations rather than presenting uncited top-level archaeology;
+- preserve uncertainty for duplicate or conflicting specialist outputs by citing contributing manifests/findings and avoiding unsupported confidence increases;
 - include a decision queue that lists findings needing user decisions and repeats enough metadata to triage without rereading every detail.
 
 ## Basic Report Skeleton
@@ -71,6 +73,7 @@ Confidence/evidence caveats: <short list; weak signals should be observations or
 - Reviewed: <paths, docs, commands>
 - Not reviewed: <known gaps>
 - Side effects: report artifact only
+- Synthesis basis: <cartography manifest plus specialist manifests/reports/findings used; note any narrow top-level verification and any duplicate/conflict handling>
 
 ## Findings / observations
 
@@ -97,6 +100,8 @@ Use `F-###` IDs for supported findings and `O-###` IDs for observations. Keep th
 ## Subagent manifests
 
 <Embed any delegated cartography or specialist subagent manifest here, or link to a small nearby Markdown artifact. Manifests are audit trails for assigned scope, lens, inspected evidence, commands, artifacts, emitted findings/observations, uncertainties, out-of-scope areas, inherited/unverified context, and coverage confidence. They support the findings and decision queue; they do not replace finding severity, confidence, evidence strength, evidence references, or suggested next decisions. If no subagents beyond the required cartography pass were used, include the cartography manifest or state where it is linked.>
+
+When multiple specialist outputs overlap, list the source manifests/findings in the relevant finding evidence. Merge duplicates only when they describe substantially the same affected area, cause, and impact. If specialist outputs conflict, keep the disagreement visible in evidence or caveats rather than forcing a single confident conclusion.
 
 ## Decision queue
 

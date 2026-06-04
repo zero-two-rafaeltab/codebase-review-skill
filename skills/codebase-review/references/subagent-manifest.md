@@ -59,4 +59,6 @@ A specialist subagent should return its slice summary plus this manifest or a co
 - uncertainties, out-of-scope areas, and inherited/unverified context;
 - coverage confidence.
 
-Specialist outputs should feed the report's findings/observations and decision queue. They do not approve decisions, create tasks, or replace the user's post-discovery decision phase.
+Specialists are constrained to the approved slice/lens and the discovery side-effect boundary. They may read repository evidence and run safe inspection commands, but must not edit code, install tooling, create issues/ADRs/commits/PR comments, spawn more agents, or broaden into unapproved lenses. If they inspect nearby evidence to understand a cited path or call chain, they should list it in `Evidence inspected` and explain the scope expansion under `Uncertainties` or `Out of scope / not inspected`.
+
+Specialist outputs should feed the report's findings/observations and decision queue. They do not approve decisions, create tasks, replace the user's post-discovery decision phase, or replace the report's required severity, confidence, evidence-strength, caveat, and decision-queue fields.
