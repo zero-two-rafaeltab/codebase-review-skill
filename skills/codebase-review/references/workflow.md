@@ -39,7 +39,7 @@ Proposed review scope:
 - Target: <repo/path/package/domain/workflow/concern>
 - Scope shape: <one of the supported scope shapes>
 - Review depth: focused manual pass
-- Discovery actions: read files/docs and run safe inspection commands only as needed
+- Discovery actions: after approval, delegate lightweight cartography, then read files/docs and run safe inspection commands only as needed
 - Report artifact: <planned report path>
 - Side-effect boundary: no code changes, commits, issues, ADRs, or PR comments during discovery
 
@@ -69,11 +69,36 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 1. **Identify whether this workflow applies.** Confirm the request is a codebase health, architecture, maintainability, refactoring, pain-spot, or risk review rather than implementation/debugging.
 2. **Propose an interpreted scope.** Name the target, scope shape, depth, expected artifact path, and discovery side-effect boundary.
 3. **Ask for go/no-go before discovery.** Wait for approval before expensive review work. If the user rejects the proposal, adjust and ask again.
-4. **Inspect the repository context.** Build a small map of only the approved scope before judging it. See the inspection checklist below.
-5. **Do a focused manual discovery pass.** Read the most relevant files and note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
-6. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention. Start the report with triage information: severity counts, top findings, main pain sources, notable caveats, and links or anchors to detailed findings.
-7. **Reply with a concise executive summary.** Keep chat short and progressively disclosed. Include severity counts, 1-3 top findings or pain sources, notable confidence/evidence caveats, and a link or pointer to the report. Leave detailed evidence in the artifact. Present findings as decision candidates, not accepted work.
-8. **Offer a post-discovery decision phase.** If the user wants to continue after the report, walk through the decision queue one item at a time or in a short batch. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
+4. **Delegate the cartography checkpoint.** After approval, ask a subagent for a lightweight read-only cartography/sizing pass over the approved scope using the output contract below. This is the only required delegation in this workflow.
+5. **Use the cartography summary as the top-level map.** The orchestrator may ask targeted follow-up questions if the summary is missing something important, but should not redo deep raw-file archaeology itself.
+6. **Do a focused manual discovery pass.** Read the most relevant files selected from the cartography summary and note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
+7. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention. Start the report with triage information: severity counts, top findings, main pain sources, notable caveats, and links or anchors to detailed findings.
+8. **Reply with a concise executive summary.** Keep chat short and progressively disclosed. Include severity counts, 1-3 top findings or pain sources, notable confidence/evidence caveats, and a link or pointer to the report. Leave detailed evidence in the artifact. Present findings as decision candidates, not accepted work.
+9. **Offer a post-discovery decision phase.** If the user wants to continue after the report, walk through the decision queue one item at a time or in a short batch. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
+
+## Delegated Cartography Checkpoint
+
+Run this checkpoint immediately after the initial interpreted-scope go/no-go and before the main discovery pass. Delegate it to a subagent as a bounded, read-only mapping task. The subagent should inspect repository metadata, docs, manifests, file names, and a small number of obvious files only as needed to size and orient the review; it should not perform exhaustive architecture analysis, language-specific tooling setup, or specialist review planning.
+
+The orchestrator should work from the returned summary when choosing review paths. It can verify narrow facts while reviewing evidence, but should avoid broad directory-by-directory or file-by-file archaeology that duplicates the delegated pass.
+
+Use this concise output contract:
+
+```markdown
+## Cartography summary
+
+- Approved scope shape: <full repository | package/module | domain | workflow | horizontal concern | dependency/usage review>, target `<target>`, and any explicit exclusions.
+- Discovered components: <main directories/packages/services/modules and one-line roles relevant to scope>.
+- Likely entry points: <routes/handlers/CLIs/jobs/config/schema/adapters/public APIs/call sites, or "unknown/not obvious">.
+- Docs and tests: <relevant README/docs/examples/test locations and obvious gaps>.
+- Cheap repo metrics: <small counts or size hints from cheap commands/searches, e.g. tracked files/directories in scope, key languages/manifests; mark unknown/not checked if unavailable>.
+- Cheap churn/hotspot signals: <recent commits/status/file history or hotspot hints when cheap; explicitly write "unknown" or "not checked" when unavailable or skipped>.
+- Likely review slices: <2-5 candidate slices for the main manual discovery pass, ordered by likely value>.
+- Known gaps: <areas not mapped, generated/vendor/build outputs skipped, missing local context, unavailable commands>.
+- Uncertainty: <what might be wrong about the map and what would change the review focus>.
+```
+
+Do not turn this checkpoint into the later specialist subagent plan: it may name likely review slices, but it should not assign multiple specialists, propose a second go/no-go, or create a complex delegation tree.
 
 ## Discovery Side-Effect Boundary
 
@@ -81,6 +106,7 @@ Allowed during discovery:
 
 - read files and repository metadata;
 - run safe inspection commands;
+- request and use the delegated read-only cartography checkpoint;
 - write the agreed review report artifact.
 
 Not allowed during discovery:
@@ -92,7 +118,8 @@ Not allowed during discovery:
 - PR comments;
 - dependency, CI, or tooling changes;
 - setup workflows or installing review tooling;
-- separate sizing passes or complex delegated review plans.
+- separate sizing passes beyond the required delegated cartography checkpoint;
+- complex delegated review plans.
 
 If the user wants action after the report, start a separate post-discovery decision or implementation workflow.
 
@@ -103,7 +130,7 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - setup tooling for target repositories;
 - normalized review commands;
 - language-specific playbooks;
-- separate sizing or mapping workflows;
+- separate sizing or mapping workflows beyond the required delegated cartography checkpoint;
 - complex delegated review plans;
 - CI integration;
 - arbitrary overall health scores or status labels such as "pass", "fail", "healthy", or "unhealthy".
@@ -114,9 +141,12 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - [ ] The interpreted scope was proposed before discovery.
 - [ ] The scope proposal used one of the supported scope shapes.
 - [ ] User go/no-go was received before discovery.
+- [ ] A delegated cartography checkpoint was run after initial scope approval.
+- [ ] The cartography summary covered scope shape, components, entry points, docs/tests, cheap metrics, churn/hotspots or unknown/not checked, likely review slices, gaps, and uncertainty.
+- [ ] The top-level review used the cartography summary instead of doing broad raw-file archaeology itself.
 - [ ] Discovery stayed read-only except for the report artifact.
 - [ ] No issues, ADRs, commits, PR comments, or code changes were created during discovery.
-- [ ] No setup, separate sizing/mapping, language-playbook, or CI workflow was introduced.
+- [ ] No setup, extra sizing/mapping, language-playbook, complex delegated review plan, or CI workflow was introduced.
 - [ ] A basic report file was written.
 - [ ] The report overview used severity counts instead of an arbitrary overall health status.
 - [ ] The report overview linked or pointed to individual finding details using stable finding IDs, heading anchors, or section links.
