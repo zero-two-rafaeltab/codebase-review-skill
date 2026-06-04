@@ -278,8 +278,7 @@ Keep this section to 2-4 bullets. State what matters most, why it matters, and w
 
 Top findings to inspect first:
 
-1. [F-001: <title>](#f-001-title) — <severity>, <confidence>; <one-line reason to inspect first>.
-2. [F-002: <title>](#f-002-title) — <severity>, <confidence>; <one-line reason to inspect first>.
+- <List 1-3 supported `F-###` findings when present, linked to their detail sections, with severity, confidence, and a one-line reason to inspect each first. If there are no supported findings, write "No supported findings; see observations below" instead. Do not promote observations into top findings unless explicitly labeled as observations.>
 
 Main pain sources: <short list of recurring areas/themes>.
 Confidence/evidence caveats: <short list; weak signals should be observations or low-confidence findings, not mixed into proven findings>.
@@ -321,7 +320,7 @@ Findings above are candidates for discussion. They are not approved issues, ADRs
 
 Each finding should be a compact decision candidate, not an accepted task. Include only these fields:
 
-- **Title:** concise name for the candidate finding.
+- **Title:** concise name for the candidate finding, normally carried in the `### F-###: <Finding title>` or `### O-###: <Observation title>` heading rather than repeated as a separate detail field.
 - **ID:** stable local ID such as `F-001` for supported findings or `O-001` for observations, included in the heading and detail fields so summaries can link to it.
 - **Area:** component, path, workflow, dependency, or concern affected.
 - **Severity:** Critical, High, Medium, Low, or Observation, based on project pain if left alone.
