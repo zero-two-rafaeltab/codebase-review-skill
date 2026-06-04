@@ -103,7 +103,7 @@ Inspect only what helps answer the approved review question:
 - **Build and dependency hints:** manifests, lockfiles, module files, workspace config, and scripts that reveal frameworks, entry points, or dependency boundaries.
 - **Runtime and data flow clues:** routes, handlers, jobs, CLI entry points, configuration, database/schema files, adapters, or integration points connected to the approved scope.
 - **Tests and examples:** test files, fixtures, examples, or snapshots that show expected behavior and coverage gaps.
-- **Recent local context when cheap:** git status and recent commits can reveal active churn, but do not rely on churn as a required scoring system.
+- **Recent local context when cheap:** git status and recent commits can reveal active churn, but do not rely on churn as a required scoring system. Record cheap churn context as a churn signal on each finding; use `unknown` or `not checked` when it was unavailable or not worth checking.
 
 Safe inspection commands are allowed when useful, for example `git status --short`, `git log --oneline -5`, file searches, tree/listing commands, or inspection of existing test/build command names in manifests or scripts. Treat failures or missing commands as context; do not fix them during discovery.
 
@@ -116,10 +116,10 @@ Use this procedure for small repositories, a narrow package/module, a single wor
 3. **Trace one or two representative paths.** Follow a typical request, command, job, data operation, or dependency usage through the code. For horizontal concerns, sample a few representative call sites instead.
 4. **Look for architecture and boundary signals.** Note unclear ownership, tangled dependencies, circular knowledge, excessive coupling, leaky abstractions, duplicated patterns, or places where policy and implementation are hard to separate.
 5. **Look for maintainability and refactoring signals.** Note hard-to-change files, repeated logic, naming mismatches, oversized modules, hidden conventions, fragile configuration, missing seams for tests, or code that requires broad edits for small behavior changes.
-6. **Look for pain spots and future-risk prevention.** Identify issues likely to slow future work, such as undocumented invariants, weak error handling, untested critical paths, brittle integration boundaries, dependency lock-in, or unclear extension points.
-7. **Classify findings without mixing concepts.** Record evidence with file paths, docs, or command summaries. Use the finding taxonomy below to label severity, confidence, and evidence strength separately. Route weak signals to Observation or low-confidence findings instead of overstating them.
+6. **Look for pain spots and future-risk prevention.** Identify issues likely to slow future work, such as undocumented invariants, weak error handling, untested critical paths, brittle integration boundaries, dependency lock-in, or unclear extension points. Do not increase severity for possible future work unless the user explicitly supplied that roadmap, migration, business, or operational context during intake or scope approval.
+7. **Classify findings without mixing concepts.** Record evidence with file paths, docs, command summaries, and a cheap churn signal when available. Use the finding taxonomy below to label severity, confidence, and evidence strength separately. Route weak signals to Observation or low-confidence findings instead of overstating them.
 8. **Keep optional delegation light.** If the scope has a clearly separable area, you may ask another agent for a small read-only inspection of that area, but do not require or design a complex delegation plan.
-9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next discussion options such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
+9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next decisions such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
 
 ## Discovery Side-Effect Boundary
 
@@ -160,7 +160,9 @@ Use this taxonomy to make findings easier to compare and decide on. Keep the con
 | Low | Minor, localized, or easily reversible pain that is worth noting but unlikely to drive near-term decisions by itself. |
 | Observation | A weak, early, contextual, or informational signal that may deserve attention but is not strong enough to treat as a proven issue. |
 
-Prefer the lowest severity that honestly describes the expected project pain. Do not raise severity because evidence is plentiful or because the reviewer feels certain; use confidence and evidence strength for that.
+Prefer the lowest severity that honestly describes the expected project pain. Do not raise severity because evidence is plentiful or because the reviewer feels certain; use confidence and evidence strength for that. Do not raise severity for speculative future work or roadmap assumptions unless that context was explicitly supplied by the user during intake or scope approval.
+
+Use `Observation` when the item is primarily an early signal, useful context, a pattern worth watching, or a research prompt. Use Low/Critical severity levels only for findings that are supported strongly enough to describe actual project pain if left alone.
 
 ### Confidence levels
 
@@ -177,11 +179,11 @@ List the strongest applicable evidence category or categories for each finding:
 - **Source evidence:** direct code/configuration/schema references show the behavior, dependency, coupling, missing boundary, or maintainability problem.
 - **Tool output:** safe inspection commands, linters, type checkers, dependency analyzers, test runners, or other existing project tools reported relevant signal.
 - **Runtime/test evidence:** executed tests, examples, local runs, logs, fixtures, or reproducible behavior show the issue or gap.
-- **Git history or churn:** recent commits, blame, file churn, or repeated changes suggest active pain or unstable ownership. Use only when cheap to inspect; do not require automated churn analysis.
+- **Git history or churn:** recent commits, blame, file churn, or repeated changes suggest active pain or unstable ownership. Use only when cheap to inspect; do not require automated churn analysis. If cheap churn data is not available, the finding's churn signal may be `unknown` or `not checked`.
 - **Documentation mismatch:** README, docs, comments, examples, or API contracts disagree with the implementation or with each other.
 - **Heuristic pattern evidence:** reviewer-recognized maintainability or architecture pattern, such as duplication, hidden conventions, oversized modules, tangled ownership, or missing seams, without stronger direct proof yet.
 
-Weak signals, especially heuristic-only signals, should be routed to Observation or labeled as low confidence unless supported by stronger evidence. Do not present a hunch, single ambiguous example, or unexplored pattern as a proven issue.
+Weak signals, especially heuristic-only signals, should be routed to Observation or labeled as low confidence unless supported by stronger evidence. Do not present a hunch, single ambiguous example, or unexplored pattern as a proven issue. When evidence is weak, say so directly in the Evidence field instead of implying there are references you did not inspect.
 
 ## Post-Discovery Decision Phase
 
@@ -204,7 +206,7 @@ During decision discussion:
 - do not automatically create GitHub issues, ADRs, docs, commits, PR comments, or code changes from findings;
 - keep discovery assessment separate from the user's decision context;
 - if the user adds business, roadmap, ownership, migration, or operational context, record it as user-provided decision context rather than rewriting the original discovery evidence;
-- if the user adjusts priority or severity, label it as user-adjusted decision severity/context, distinct from the discovery assessment;
+- if the user adjusts priority or severity, including after adding future-work or business context, label it as user-adjusted decision severity/context, distinct from the discovery assessment;
 - when an action is chosen, start or hand off to the appropriate separate workflow for that selected action.
 
 ## Out of Scope for This Workflow
@@ -239,7 +241,8 @@ Minimum output contract:
 - include a 2-4 bullet executive summary near the top of the report;
 - include compact findings or observations using the basic finding fields below;
 - state in the report that findings are decision candidates, not accepted work;
-- include severity, confidence, and evidence strength on findings without calculating an overall health score or assigning a global status label.
+- include severity, confidence, evidence strength, impact, and suggested next decisions on findings without calculating an overall health score or assigning a global status label;
+- include a severity justification, evidence references or an explicit weak-evidence statement, and a churn signal on each finding.
 
 ## Basic Report Skeleton
 
@@ -268,16 +271,18 @@ Keep this section to 2-4 bullets. State what matters most, why it matters, and w
 
 ## Findings / observations
 
-### <Finding title>
+### <Finding or Observation: title>
 
 - Area: <component, path, or concern>
 - Severity: <Critical/High/Medium/Low/Observation>
+- Severity justification: <short explanation of project pain if left alone; for Observation, state why it is not yet a supported finding>
 - Confidence: <High/Medium/Low>
 - Evidence strength: <source evidence/tool output/runtime or test evidence/Git history or churn/documentation mismatch/heuristic pattern evidence>
+- Churn signal: <recent churn seen / low churn seen / unknown / not checked>
 - Summary: <what appears to be happening>
-- Evidence: <file paths, command output summaries, or doc references>
+- Evidence: <file paths, command output summaries, doc references, or "weak evidence: ...">
 - Impact: <why this might matter>
-- Suggested next discussion: <accept/reject/ignore/research/document/create an issue/plan a refactor>
+- Suggested next decisions: <accept/reject/ignore/research/document/create an issue/plan a refactor>
 
 ## Coverage gaps
 
@@ -295,14 +300,16 @@ Each finding should be a compact decision candidate, not an accepted task. Inclu
 - **Title:** concise name for the candidate finding.
 - **Area:** component, path, workflow, dependency, or concern affected.
 - **Severity:** Critical, High, Medium, Low, or Observation, based on project pain if left alone.
+- **Severity justification:** a short explanation tying the severity to the project pain if left alone. For Observation, explain why the signal is not yet supported enough to treat as a finding.
 - **Confidence:** High, Medium, or Low, based on how sure the reviewer is that the finding is real and accurately characterized.
 - **Evidence strength:** one or more support categories from the finding taxonomy, such as source evidence, tool output, runtime/test evidence, Git history or churn, documentation mismatch, or heuristic pattern evidence.
+- **Churn signal:** cheap local churn context if available, such as `recent churn seen`, `low churn seen`, `unknown`, or `not checked`. Do not perform automated churn analysis just to fill this field.
 - **Summary:** what appears to be happening in plain language.
-- **Evidence:** file paths, documentation references, or command-output summaries that support the observation.
+- **Evidence:** file paths, documentation references, or command-output summaries that support the observation. If evidence is weak, state that directly, for example `Weak evidence: single sampled call site; no tests or history checked`.
 - **Impact:** why the pattern could matter for maintainability, architecture, delivery speed, reliability, or future change.
-- **Suggested next discussion:** a concrete decision path such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
+- **Suggested next decisions:** concrete decision paths such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
 
-Do not add an overall health score, pass/fail result, or global project status label. If a signal is weak, use Observation or Low confidence and state the uncertainty in the summary or evidence.
+Do not add an overall health score, pass/fail result, or global project status label. If a signal is weak, use Observation or Low confidence and state the uncertainty in the summary or evidence. Keep Observations visibly distinct from better-supported findings: Observations are context or research prompts, while findings assert project pain supported by evidence.
 
 ## Chat Summary Format
 
@@ -334,7 +341,11 @@ Keep chat to the report path, 2-4 executive-summary bullets, the decision-candid
 - [ ] A basic report file was written.
 - [ ] Chat response stayed concise and pointed to the report.
 - [ ] Findings were framed as decision candidates with severity, confidence, and evidence strength kept separate.
+- [ ] Each finding included severity, severity justification, confidence, evidence strength, churn signal, impact, and suggested next decisions.
+- [ ] Evidence was cited with file paths/docs/command summaries, or weak evidence was clearly labeled.
+- [ ] Observations were distinguished from better-supported findings.
 - [ ] Weak signals were routed to Observation or Low confidence rather than presented as proven issues.
+- [ ] Speculative future work did not affect discovery severity unless the user explicitly supplied that context during intake or scope approval.
 - [ ] No arbitrary overall health score or global status label was introduced.
-- [ ] Any post-discovery discussion kept user decisions separate from discovery assessment.
+- [ ] Any post-discovery discussion kept user decisions separate from discovery assessment and allowed user-adjusted severity after added future-work or business context.
 - [ ] No issues, ADRs, docs, refactor plans, or implementation work were created automatically from findings.
