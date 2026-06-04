@@ -26,6 +26,7 @@ Minimum output contract:
 - state in the report that findings are decision candidates, not accepted work;
 - include severity, confidence, evidence strength, impact, and suggested next decisions on findings without calculating an overall health score or assigning a global status label;
 - include a severity justification, evidence references or an explicit weak-evidence statement, and a churn signal on each finding;
+- include delegated subagent manifests directly in the report or link to a small nearby manifest artifact when subagents were used;
 - include a decision queue that lists findings needing user decisions and repeats enough metadata to triage without rereading every detail.
 
 ## Basic Report Skeleton
@@ -92,6 +93,10 @@ Use `F-###` IDs for supported findings and `O-###` IDs for observations. Keep th
 ## Coverage gaps
 
 - <what a deeper review should inspect later>
+
+## Subagent manifests
+
+<Embed any delegated cartography or specialist subagent manifest here, or link to a small nearby Markdown artifact. Manifests are audit trails for assigned scope, lens, inspected evidence, commands, artifacts, emitted findings/observations, uncertainties, out-of-scope areas, inherited/unverified context, and coverage confidence. They support the findings and decision queue; they do not replace finding severity, confidence, evidence strength, evidence references, or suggested next decisions. If no subagents beyond the required cartography pass were used, include the cartography manifest or state where it is linked.>
 
 ## Decision queue
 

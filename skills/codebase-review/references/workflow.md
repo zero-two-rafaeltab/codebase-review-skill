@@ -69,8 +69,8 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 1. **Identify whether this workflow applies.** Confirm the request is a codebase health, architecture, maintainability, refactoring, pain-spot, or risk review rather than implementation/debugging.
 2. **Propose an interpreted scope.** Name the target, scope shape, depth, expected artifact path, and discovery side-effect boundary.
 3. **Ask for go/no-go before discovery.** Wait for approval before expensive review work. If the user rejects the proposal, adjust and ask again.
-4. **Delegate the cartography checkpoint.** After approval, ask a subagent for a lightweight read-only cartography/sizing pass over the approved scope using the output contract below. This is the required delegated cartography pass for this workflow.
-5. **Use the cartography summary as the top-level map.** The orchestrator may ask targeted follow-up questions if the summary is missing something important, but should not redo deep raw-file archaeology itself.
+4. **Delegate the cartography checkpoint.** After approval, ask a subagent for a lightweight read-only cartography/sizing pass over the approved scope using the output contract below and the relevant subagent manifest subset. This is the required delegated cartography pass for this workflow.
+5. **Use the cartography summary and manifest as the top-level map.** The orchestrator may ask targeted follow-up questions if the summary is missing something important, but should not redo deep raw-file archaeology itself.
 6. **Propose a lightweight specialist review plan.** Turn the cartography summary into a short plan for the main specialist/manual review. The plan must name review slices/lenses, expected artifacts, coverage gaps, and HITL questions, and explain why the split fits the approved scope.
 7. **Ask for a second go/no-go before specialist review begins.** If the user approves, continue. If the user rejects or adjusts the plan, revise it and ask again instead of starting review work.
 8. **Do a focused manual discovery pass.** Read the most relevant files selected from the cartography summary and approved plan; note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
@@ -81,6 +81,8 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 ## Delegated Cartography Checkpoint
 
 Run this checkpoint immediately after the initial interpreted-scope go/no-go and before the main discovery pass. Delegate it to a subagent as a bounded, read-only mapping task. The subagent should inspect repository metadata, docs, manifests, file names, and a small number of obvious files only as needed to size and orient the review; it should not perform exhaustive architecture analysis, language-specific tooling setup, or specialist review planning.
+
+The cartography subagent must return the summary plus the relevant subset of the [Subagent Manifest Contract](subagent-manifest.md), distinguishing evidence it actually inspected from inherited assumptions or unverified context.
 
 The orchestrator should work from the returned summary when choosing review paths. It can verify narrow facts while reviewing evidence, but should avoid broad directory-by-directory or file-by-file archaeology that duplicates the delegated pass.
 
@@ -101,6 +103,8 @@ Use this concise output contract:
 ```
 
 Do not turn this checkpoint itself into the specialist review plan: it may name likely review slices, but it should not assign multiple specialists, ask the second go/no-go, or create a complex delegation tree. The orchestrator creates the lightweight plan after cartography returns.
+
+If a later approved review plan delegates a specialist slice to a subagent rather than doing it directly, instruct that specialist subagent to return its slice summary, any findings/observations using the existing severity/confidence/evidence-strength fields, and the relevant subset of the [Subagent Manifest Contract](subagent-manifest.md). Use the manifest to audit coverage and assumptions during synthesis; do not replace the report's finding fields or decision queue.
 
 ## Lightweight Specialist Review Plan Checkpoint
 
@@ -169,11 +173,13 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - [ ] User go/no-go was received before discovery.
 - [ ] A delegated cartography checkpoint was run after initial scope approval.
 - [ ] The cartography summary covered scope shape, components, entry points, docs/tests, cheap metrics, churn/hotspots or unknown/not checked, likely review slices, gaps, and uncertainty.
+- [ ] The cartography subagent returned a manifest or relevant subset covering assigned scope, lens, inspected evidence, commands, artifacts, uncertainties, out-of-scope areas, inherited/unverified context, and coverage confidence.
 - [ ] A lightweight specialist review plan was proposed after cartography and before full specialist/manual review.
 - [ ] The plan named review slices/lenses, expected artifacts, coverage gaps, HITL questions, and why the split fit the approved scope.
 - [ ] User go/no-go was received for the specialist review plan before full specialist/manual review began.
 - [ ] If the user rejected or adjusted the plan, the orchestrator revised it and asked again instead of proceeding.
 - [ ] The top-level review used the cartography summary instead of doing broad raw-file archaeology itself.
+- [ ] Any delegated specialist subagent returned a manifest or relevant subset and kept severity, confidence, evidence strength, and decision candidates in the existing report model.
 - [ ] Discovery stayed read-only except for the report artifact.
 - [ ] No issues, ADRs, commits, PR comments, or code changes were created during discovery.
 - [ ] No setup, extra sizing/mapping, language-playbook, advanced synthesis, complex delegated review plan beyond the approved lightweight plan, or CI workflow was introduced.
