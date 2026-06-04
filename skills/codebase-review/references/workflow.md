@@ -73,10 +73,11 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 5. **Use the cartography summary and manifest as the top-level map.** The orchestrator may ask targeted follow-up questions if the summary is missing something important, but should not redo deep raw-file archaeology itself.
 6. **Propose a lightweight specialist review plan.** Turn the cartography summary into a short plan for the main specialist/manual review. The plan must name review slices/lenses, expected artifacts, coverage gaps, and HITL questions, and explain why the split fits the approved scope.
 7. **Ask for a second go/no-go before specialist review begins.** If the user approves, continue. If the user rejects or adjusts the plan, revise it and ask again instead of starting review work.
-8. **Do a focused manual discovery pass.** Read the most relevant files selected from the cartography summary and approved plan; note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
-9. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention. Start the report with triage information: severity counts, top findings, main pain sources, notable caveats, and links or anchors to detailed findings.
-10. **Reply with a concise executive summary.** Keep chat short and progressively disclosed. Include severity counts, 1-3 top findings or pain sources, notable confidence/evidence caveats, and a link or pointer to the report. Leave detailed evidence in the artifact. Present findings as decision candidates, not accepted work.
-11. **Offer a post-discovery decision phase.** If the user wants to continue after the report, walk through the decision queue one item at a time or in a short batch. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
+8. **Launch the approved specialist review slices.** After the second go/no-go, run the plan's read-only specialist subagents or perform explicitly approved slices directly when delegation is unnecessary. Each specialist subagent gets only its assigned scope/lens, the relevant cartography context, the discovery side-effect boundary, and the manifest/finding return contract.
+9. **Synthesize specialist outputs.** Build the report from cartography plus specialist manifests, slice reports, and emitted findings/observations. Do only narrow fact checks needed to avoid misquoting evidence; do not redo broad raw-file archaeology.
+10. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention. Start the report with triage information: severity counts, top findings, main pain sources, notable caveats, and links or anchors to detailed findings.
+11. **Reply with a concise executive summary.** Keep chat short and progressively disclosed. Include severity counts, 1-3 top findings or pain sources, notable confidence/evidence caveats, and a link or pointer to the report. Leave detailed evidence in the artifact. Present findings as decision candidates, not accepted work.
+12. **Offer a post-discovery decision phase.** If the user wants to continue after the report, walk through the decision queue one item at a time or in a short batch. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
 
 ## Delegated Cartography Checkpoint
 
@@ -129,6 +130,47 @@ Go/no-go for this review plan?
 
 If the user says no, changes priorities, adds exclusions, or asks for another lens, revise the proposal and ask again. Do not start the specialist/manual review until the user approves the revised plan.
 
+## Launching Specialist Read-Only Reviews
+
+Run specialist reviews only after the second go/no-go approves the lightweight plan. This is still discovery, so specialists inherit the same read-only side-effect boundary as the orchestrator.
+
+For each approved slice, send a compact delegation prompt with:
+
+- the approved overall scope and explicit exclusions;
+- the specialist's assigned slice/lens and allowed paths, components, workflow, dependency usage, or concern;
+- the cartography summary and any inherited context needed to orient the slice;
+- the discovery side-effect boundary: read files/repository metadata, run safe inspection commands, and write only the requested slice output/manifest if an artifact is needed; do not edit code, install tooling, create issues/ADRs/commits/PR comments, or start setup workflows;
+- the required return contract: slice summary, findings/observations using the normal severity/confidence/evidence-strength fields, coverage gaps and uncertainties, plus the specialist subset of the subagent manifest.
+
+Specialist subagents must stay within their assigned scope and lens. They may inspect nearby files only when needed to understand directly referenced evidence, and must record that expansion in the manifest. They must not add new lenses, spawn additional agents, perform exhaustive architecture analysis, or turn findings into accepted work.
+
+Use this concise prompt shape:
+
+```text
+Specialist read-only review request:
+- Approved review scope: <target and scope shape, with exclusions>
+- Assigned slice/lens: <one approved slice/lens only>
+- Allowed focus: <paths/components/workflow/dependency/concern to inspect>
+- Context: <cartography summary excerpt and relevant inherited assumptions>
+- Side-effect boundary: read-only discovery; safe inspection commands only; no code changes, setup/tooling installs, commits, issues, ADRs, or PR comments; write only the requested slice output/manifest if needed.
+- Return: slice summary; findings/observations with ID or provisional title, severity, confidence, evidence strength, churn signal if cheap/known, evidence references, impact, and suggested next decisions; coverage gaps/uncertainties; specialist subagent manifest subset.
+```
+
+If the approved plan has only one small slice or the user explicitly wants the orchestrator to do the pass directly, the orchestrator may perform the slice without launching a specialist. Still follow the approved plan, keep the same boundary, and document the absence of specialist manifests in the report.
+
+## Lightweight Synthesis Rules
+
+The orchestrator synthesizes; it should not repeat the specialists' raw archaeology. Use the returned cartography summary, subagent manifests, slice reports, and emitted findings/observations as the primary evidence map.
+
+Apply these conservative rules:
+
+- **Trace every carried-forward finding.** A report finding or observation derived from a specialist output should cite the contributing specialist finding/manifest and the underlying file/doc/command evidence that the specialist reported.
+- **Merge obvious duplicates cautiously.** If two specialists report the same issue, merge it into one finding only when the affected area, cause, and impact are substantially the same. Cite both sources and keep the lower confidence or a clearly caveated confidence unless the combined evidence justifies more.
+- **Preserve conflicts and uncertainty.** If specialists disagree about cause, severity, or confidence, do not force a winner. Record the disagreement in the finding evidence/caveats or split into separate findings/observations when they are materially different.
+- **Avoid confidence inflation.** More reports are not automatically stronger evidence. Raise confidence only when the cited evidence is more direct or covers materially different representative paths.
+- **Keep decision candidates intact.** The synthesized report still uses the normal finding fields, triage overview, progressive-disclosure structure, and decision queue. Specialist outputs inform the queue; they do not approve issues, ADRs, or implementation work.
+- **Do narrow verification only.** The orchestrator may open a cited file or rerun a cheap command to confirm a quote, path, or interpretation, but should not conduct a broad second review over the same raw files.
+
 ## Discovery Side-Effect Boundary
 
 Allowed during discovery:
@@ -137,6 +179,8 @@ Allowed during discovery:
 - run safe inspection commands;
 - request and use the delegated read-only cartography checkpoint;
 - propose and use the approved lightweight specialist review plan;
+- launch approved read-only specialist review subagents within their assigned scopes/lenses;
+- synthesize from specialist manifests, slice reports, and findings/observations;
 - write the agreed review report artifact.
 
 Not allowed during discovery:
@@ -149,6 +193,7 @@ Not allowed during discovery:
 - dependency, CI, or tooling changes;
 - setup workflows or installing review tooling;
 - separate sizing passes beyond the required delegated cartography checkpoint;
+- specialist work outside the approved slices/lenses;
 - complex delegated review plans beyond the approved lightweight specialist review plan.
 
 If the user wants action after the report, start a separate post-discovery decision or implementation workflow.
@@ -161,6 +206,7 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - normalized review commands;
 - language-specific playbooks;
 - separate sizing or mapping workflows beyond the required delegated cartography checkpoint;
+- specialist subagents outside the second-go/no-go approved slices or beyond the discovery side-effect boundary;
 - complex delegated review plans beyond the approved lightweight specialist review plan;
 - CI integration;
 - arbitrary overall health scores or status labels such as "pass", "fail", "healthy", or "unhealthy".
@@ -178,8 +224,14 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - [ ] The plan named review slices/lenses, expected artifacts, coverage gaps, HITL questions, and why the split fit the approved scope.
 - [ ] User go/no-go was received for the specialist review plan before full specialist/manual review began.
 - [ ] If the user rejected or adjusted the plan, the orchestrator revised it and asked again instead of proceeding.
+- [ ] After the second go/no-go, any specialist subagents were launched only for approved slices/lenses and received their assigned scope, inherited context, side-effect boundary, and return contract.
+- [ ] Specialist subagents stayed read-only, did not edit code/install tooling/create issues/ADRs/commits/PR comments, and did not spawn deeper delegation.
+- [ ] Specialist outputs included slice summaries, findings/observations with severity/confidence/evidence strength where applicable, uncertainties/gaps, and manifests or relevant subsets.
 - [ ] The top-level review used the cartography summary instead of doing broad raw-file archaeology itself.
 - [ ] Any delegated specialist subagent returned a manifest or relevant subset and kept severity, confidence, evidence strength, and decision candidates in the existing report model.
+- [ ] The orchestrator synthesized from subagent manifests, reports, and emitted findings/observations, using only narrow verification instead of broad raw archaeology.
+- [ ] Duplicate findings were merged only when substantially the same, with contributing source manifests/findings cited.
+- [ ] Conflicting or uncertain specialist outputs preserved uncertainty, cited sources, and avoided overstating confidence.
 - [ ] Discovery stayed read-only except for the report artifact.
 - [ ] No issues, ADRs, commits, PR comments, or code changes were created during discovery.
 - [ ] No setup, extra sizing/mapping, language-playbook, advanced synthesis, complex delegated review plan beyond the approved lightweight plan, or CI workflow was introduced.
