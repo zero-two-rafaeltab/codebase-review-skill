@@ -87,8 +87,8 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 3. **Ask for go/no-go before discovery.** Wait for approval before expensive review work. If the user rejects the proposal, adjust and ask again.
 4. **Inspect the repository context.** Build a small map of only the approved scope before judging it. See the inspection checklist below.
 5. **Do a focused manual discovery pass.** Read the most relevant files and note architecture shape, maintainability pain, refactoring opportunities, and risks that could compound later. Keep the pass small enough to complete manually.
-6. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention.
-7. **Reply with a concise executive summary.** Keep chat short. Link or point to the report file. Present findings as decision candidates, not accepted work.
+6. **Write a basic report artifact.** Put the report in a predictable local path such as `reviews/<YYYY-MM-DD>-codebase-review-<scope-slug>.md` unless the project already has a clearer review folder convention. Start the report with triage information: severity counts, top findings, main pain sources, notable caveats, and links or anchors to detailed findings.
+7. **Reply with a concise executive summary.** Keep chat short and progressively disclosed. Include severity counts, 1-3 top findings or pain sources, notable confidence/evidence caveats, and a link or pointer to the report. Leave detailed evidence in the artifact. Present findings as decision candidates, not accepted work.
 8. **Offer a post-discovery decision phase.** If the user wants to continue after the report, discuss findings one by one or as a short queue. Do not create issues, ADRs, commits, PR comments, or code changes unless the user explicitly chooses a separate action workflow for selected findings.
 
 ## Repository and Context Inspection
@@ -238,7 +238,9 @@ The report is the durable handoff. Chat should point to it rather than copying t
 Minimum output contract:
 
 - create exactly one primary Markdown report artifact for the review;
-- include a 2-4 bullet executive summary near the top of the report;
+- include a 2-4 bullet executive summary near the top of the report that names severity counts, top findings, main pain sources, and notable confidence/evidence caveats;
+- include a compact triage overview near the top with counts by severity instead of an arbitrary overall health status;
+- point from the overview to individual finding details using stable finding IDs, heading anchors, or section links;
 - include compact findings or observations using the basic finding fields below;
 - state in the report that findings are decision candidates, not accepted work;
 - include severity, confidence, evidence strength, impact, and suggested next decisions on findings without calculating an overall health score or assigning a global status label;
@@ -257,11 +259,30 @@ Mode: Focused manual review
 
 ## Executive summary
 
-- <top observation or finding>
-- <top risk or pain spot>
-- <recommended discussion focus>
+- Severity counts: Critical <n>, High <n>, Medium <n>, Low <n>, Observations <n>.
+- Top findings: <1-3 most decision-relevant finding IDs/titles and why they matter>.
+- Main pain sources: <recurring architecture, maintainability, reliability, testing, documentation, or delivery themes>.
+- Caveats: <notable low-confidence items, weak evidence, unreviewed areas, or "none beyond coverage gaps below">.
 
-Keep this section to 2-4 bullets. State what matters most, why it matters, and what discussion would unblock a decision.
+Keep this section to 2-4 bullets. State what matters most, why it matters, and what discussion would unblock a decision. Do not use a global health label such as "healthy", "unhealthy", "pass", or "fail".
+
+## Triage overview
+
+| Severity | Count | Items |
+| --- | ---: | --- |
+| Critical | <n> | <links to F-### findings or "None"> |
+| High | <n> | <links to F-### findings or "None"> |
+| Medium | <n> | <links to F-### findings or "None"> |
+| Low | <n> | <links to F-### findings or "None"> |
+| Observation | <n> | <links to O-### observations or "None"> |
+
+Top findings to inspect first:
+
+1. [F-001: <title>](#f-001-title) — <severity>, <confidence>; <one-line reason to inspect first>.
+2. [F-002: <title>](#f-002-title) — <severity>, <confidence>; <one-line reason to inspect first>.
+
+Main pain sources: <short list of recurring areas/themes>.
+Confidence/evidence caveats: <short list; weak signals should be observations or low-confidence findings, not mixed into proven findings>.
 
 ## Scope and method
 
@@ -271,8 +292,9 @@ Keep this section to 2-4 bullets. State what matters most, why it matters, and w
 
 ## Findings / observations
 
-### <Finding or Observation: title>
+### F-001: <Finding title>
 
+- ID: F-001
 - Area: <component, path, or concern>
 - Severity: <Critical/High/Medium/Low/Observation>
 - Severity justification: <short explanation of project pain if left alone; for Observation, state why it is not yet a supported finding>
@@ -283,6 +305,8 @@ Keep this section to 2-4 bullets. State what matters most, why it matters, and w
 - Evidence: <file paths, command output summaries, doc references, or "weak evidence: ...">
 - Impact: <why this might matter>
 - Suggested next decisions: <accept/reject/ignore/research/document/create an issue/plan a refactor>
+
+Use `F-###` IDs for supported findings and `O-###` IDs for observations. Keep these IDs stable within the report so the executive summary, triage overview, and chat response can point to detailed sections without copying all details into chat.
 
 ## Coverage gaps
 
@@ -298,6 +322,7 @@ Findings above are candidates for discussion. They are not approved issues, ADRs
 Each finding should be a compact decision candidate, not an accepted task. Include only these fields:
 
 - **Title:** concise name for the candidate finding.
+- **ID:** stable local ID such as `F-001` for supported findings or `O-001` for observations, included in the heading and detail fields so summaries can link to it.
 - **Area:** component, path, workflow, dependency, or concern affected.
 - **Severity:** Critical, High, Medium, Low, or Observation, based on project pain if left alone.
 - **Severity justification:** a short explanation tying the severity to the project pain if left alone. For Observation, explain why the signal is not yet supported enough to treat as a finding.
@@ -309,7 +334,7 @@ Each finding should be a compact decision candidate, not an accepted task. Inclu
 - **Impact:** why the pattern could matter for maintainability, architecture, delivery speed, reliability, or future change.
 - **Suggested next decisions:** concrete decision paths such as accept, reject, ignore, research, document, create an issue, or plan a refactor.
 
-Do not add an overall health score, pass/fail result, or global project status label. If a signal is weak, use Observation or Low confidence and state the uncertainty in the summary or evidence. Keep Observations visibly distinct from better-supported findings: Observations are context or research prompts, while findings assert project pain supported by evidence.
+Do not add an overall health score, pass/fail result, or global project status label. Summarize triage with counts by severity instead. If a signal is weak, use Observation or Low confidence and state the uncertainty in the summary or evidence. Keep Observations visibly distinct from better-supported findings: Observations are context or research prompts, while findings assert project pain supported by evidence.
 
 ## Chat Summary Format
 
@@ -319,15 +344,16 @@ After writing the report, keep the chat response short:
 Report: <path/to/report.md>
 
 Executive summary:
-- <most important observation>
-- <most important risk or pain spot>
-- <recommended discussion focus>
+- Severity counts: Critical <n>, High <n>, Medium <n>, Low <n>, Observations <n>.
+- Top findings: <1-3 linked IDs/titles or "no supported findings; see observations">.
+- Main pain sources: <short themes or affected areas>.
+- Caveats: <low-confidence or weak-evidence notes; point to observations instead of overstating them>.
 
 These findings are decision candidates, not accepted work.
 Next options: <walk through findings / accept, reject, or ignore candidates / research deeper / document context / create an issue for a selected finding / plan a refactor>
 ```
 
-Keep chat to the report path, 2-4 executive-summary bullets, the decision-candidate reminder, and clear next options. Do not paste the full finding list unless the user asks.
+Keep chat to the report path, 2-4 executive-summary bullets, the decision-candidate reminder, and clear next options. The bullets may mention only the top 1-3 finding IDs/titles and should point to the report for details. Do not paste the full finding list unless the user asks.
 
 ## Verification Checklist
 
@@ -339,7 +365,10 @@ Keep chat to the report path, 2-4 executive-summary bullets, the decision-candid
 - [ ] No issues, ADRs, commits, PR comments, or code changes were created during discovery.
 - [ ] No setup, separate sizing/mapping, language-playbook, or CI workflow was introduced.
 - [ ] A basic report file was written.
+- [ ] The report overview used severity counts instead of an arbitrary overall health status.
+- [ ] The report overview linked or pointed to individual finding details using stable finding IDs, heading anchors, or section links.
 - [ ] Chat response stayed concise and pointed to the report.
+- [ ] Chat summary used progressive disclosure: severity counts, top findings or pain sources, caveats, and next options without copying full finding details.
 - [ ] Findings were framed as decision candidates with severity, confidence, and evidence strength kept separate.
 - [ ] Each finding included severity, severity justification, confidence, evidence strength, churn signal, impact, and suggested next decisions.
 - [ ] Evidence was cited with file paths/docs/command summaries, or weak evidence was clearly labeled.
