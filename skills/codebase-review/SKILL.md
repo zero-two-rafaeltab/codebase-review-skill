@@ -119,7 +119,7 @@ Use this procedure for small repositories, a narrow package/module, a single wor
 6. **Look for pain spots and future-risk prevention.** Identify issues likely to slow future work, such as undocumented invariants, weak error handling, untested critical paths, brittle integration boundaries, dependency lock-in, or unclear extension points. Do not increase severity for possible future work unless the user explicitly supplied that roadmap, migration, business, or operational context during intake or scope approval.
 7. **Classify findings without mixing concepts.** Record evidence with file paths, docs, command summaries, and a cheap churn signal when available. Use the finding taxonomy below to label severity, confidence, and evidence strength separately. Route weak signals to Observation or low-confidence findings instead of overstating them.
 8. **Keep optional delegation light.** If the scope has a clearly separable area, you may ask another agent for a small read-only inspection of that area, but do not require or design a complex delegation plan.
-9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next decisions such as accept, reject or ignore, create an issue, document a decision, launch deeper research, revise severity, or plan/implement separately.
+9. **Synthesize into decision candidates.** Group related observations, explain impact, and suggest next decisions such as accept, reject or ignore, create an issue, document an ADR/decision, launch deeper research, revise severity, or plan/implement separately.
 
 ## Discovery Side-Effect Boundary
 
@@ -304,7 +304,7 @@ Confidence/evidence caveats: <short list; weak signals should be observations or
 - Summary: <what appears to be happening>
 - Evidence: <file paths, command output summaries, doc references, or "weak evidence: ...">
 - Impact: <why this might matter>
-- Suggested next decisions: <accept/reject/ignore/research/document/create an issue/plan a refactor>
+- Suggested next decisions: <accept; reject/ignore; create issue; document ADR/decision; launch deeper research; revise severity; plan/implement separately>
 
 Use `F-###` IDs for supported findings and `O-###` IDs for observations. Keep these IDs stable within the report so the executive summary, triage overview, and chat response can point to detailed sections without copying all details into chat.
 
