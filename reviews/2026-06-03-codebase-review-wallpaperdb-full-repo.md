@@ -6,28 +6,10 @@ Mode: Focused manual review
 
 ## Executive summary
 
-- Severity counts: Critical 0, High 1, Medium 1, Low 0, Observations 1.
-- Top findings: [F-001](#f-001-event-consumer-terminal-failure-handling-is-still-only-a-todo) event-consumer terminal failures lack a durable recovery/alert path; [F-002](#f-002-orphaned-storage-reconciliation-documents-a-scaling-gap) orphaned-storage reconciliation documents a pagination scaling gap.
-- Main pain sources: reliability hardening around asynchronous event recovery and reconciliation; documentation/template drift is an observation to clarify, not a proven high-confidence issue.
-- Caveats: intentionally narrow manual pass; no full architecture audit, target test run, CI review, security review, or runtime verification was performed.
-
-## Triage overview
-
-| Severity | Count | Items |
-| --- | ---: | --- |
-| Critical | 0 | None |
-| High | 1 | [F-001: Event consumer terminal-failure handling is still only a TODO](#f-001-event-consumer-terminal-failure-handling-is-still-only-a-todo) |
-| Medium | 1 | [F-002: Orphaned storage reconciliation documents a scaling gap](#f-002-orphaned-storage-reconciliation-documents-a-scaling-gap) |
-| Low | 0 | None |
-| Observation | 1 | [O-001: Service template docs may drift from established implementation details](#o-001-service-template-docs-may-drift-from-established-implementation-details) |
-
-Top findings to inspect first:
-
-1. [F-001: Event consumer terminal-failure handling is still only a TODO](#f-001-event-consumer-terminal-failure-handling-is-still-only-a-todo) — High severity, Medium confidence; this is the clearest operational recovery seam in the sampled event pipeline.
-2. [F-002: Orphaned storage reconciliation documents a scaling gap](#f-002-orphaned-storage-reconciliation-documents-a-scaling-gap) — Medium severity, High confidence; the code comments and implementation directly document the pagination limitation.
-
-Main pain sources: asynchronous failure recovery, reconciliation scalability, and keeping service-creation docs aligned with implementation.
-Confidence/evidence caveats: O-001 is a weak/documentation-context signal and should be treated as a clarification prompt unless a deeper docs/code sync review confirms it.
+- `wallpaperdb` is well documented and easy to orient around: README, architecture docs, service READMEs, Makefile targets, and event schemas quickly expose the main service boundaries.
+- The event-driven pipeline has explicit schemas and tests, but failure handling after max retries is only logged/TODO in multiple consumers, which could make poison-message or downstream outage recovery unclear as the system grows.
+- Reconciliation protects the upload path from partial failure, but at least one storage reconciliation path documents a known no-pagination limitation that can become a scaling/operability pain spot.
+- Suggested discussion focus: decide whether DLQ/alerting for event consumers and paginated storage reconciliation should be tracked as near-term hardening candidates.
 
 ## Scope and method
 
@@ -52,47 +34,29 @@ Confidence/evidence caveats: O-001 is a weak/documentation-context signal and sh
 
 ## Findings / observations
 
-### F-001: Event consumer terminal-failure handling is still only a TODO
+### Event consumer terminal-failure handling is still only a TODO
 
-- ID: F-001
 - Area: Event consumers in `apps/media/src/services/consumers/` and `apps/variant-generator/src/services/consumers/`; shared retry behavior in `packages/events/src/consumer/base-event-consumer.ts`.
-- Severity: High
-- Severity justification: Terminal failure behavior is on an important asynchronous pipeline path and can create serious reliability/operability pain if poison messages or downstream outages occur without durable recovery or alerting.
-- Confidence: Medium
-- Evidence strength: Source evidence; heuristic pattern evidence
-- Churn signal: Not checked
 - Summary: The shared consumer base terminates messages after configured retries, and service-specific consumers override max-retry hooks, but the hooks currently log and leave `TODO: Send to DLQ or alerting system`. This is understandable for a growing service, but it is a key operational seam in an at-least-once event pipeline.
 - Evidence: `packages/events/src/consumer/base-event-consumer.ts` terminates messages when `deliveryAttempt >= this.maxRetries`; `apps/media/src/services/consumers/wallpaper-uploaded-consumer.service.ts` and `apps/media/src/services/consumers/wallpaper-variant-uploaded-consumer.service.ts` include max-retry TODOs; `apps/variant-generator/src/services/consumers/wallpaper-uploaded-consumer.service.ts` has the same TODO.
 - Impact: If a consumer hits a poison message or a downstream dependency repeatedly fails, the system may have no durable recovery queue or alert path beyond logs. That can make event loss/replay decisions harder and can hide data drift between services.
-- Suggested next decisions: accept, research, create an issue, or document a lightweight DLQ/alerting convention for event-consumer production hardening.
+- Suggested next discussion: create an issue or research a lightweight DLQ/alerting convention for event-consumer production hardening.
 
-### F-002: Orphaned storage reconciliation documents a scaling gap
+### Orphaned storage reconciliation documents a scaling gap
 
-- ID: F-002
 - Area: Ingestor reconciliation, especially `apps/ingestor/src/services/reconciliation/orphaned-minio-reconciliation.service.ts`.
-- Severity: Medium
-- Severity justification: The limitation affects a bounded reconciliation path rather than the main upload flow, but it can slow cleanup or weaken partial-failure recovery as bucket size grows.
-- Confidence: High
-- Evidence strength: Source evidence; documentation mismatch
-- Churn signal: Not checked
 - Summary: The upload path has a good write-ahead/reconciliation story, but the orphaned-MinIO reconciliation path explicitly lists all objects at once and documents that pagination is not implemented.
 - Evidence: `apps/ingestor/src/services/upload/upload-orchestrator.service.ts` records intent, stores the object, transitions state, and leaves NATS publish failures to reconciliation; `apps/ingestor/src/services/reconciliation/orphaned-minio-reconciliation.service.ts` notes no pagination, uses one `ListObjectsV2Command`, and then batches only the returned `Contents` array.
 - Impact: On larger buckets, cleanup could miss objects beyond one list page or consume more memory/time than expected. Because reconciliation is part of the partial-failure safety net, scaling gaps there can weaken the reliability story even if the main upload path is robust.
-- Suggested next decisions: accept as a hardening candidate, create an issue, or document expected bucket size assumptions.
+- Suggested next discussion: accept as a hardening candidate and either create an issue or document expected bucket size assumptions.
 
-### O-001: Service template docs may drift from established implementation details
+### Service template docs may drift from established implementation details
 
-- ID: O-001
 - Area: Documentation for service creation, especially `apps/docs/content/docs/guides/creating-new-service.mdx` compared with current service code.
-- Severity: Observation
-- Severity justification: The sampled mismatch is useful context but may be intentional template simplification; it is not supported enough by this narrow pass to assert concrete project pain.
-- Confidence: Low
-- Evidence strength: Documentation mismatch; heuristic pattern evidence
-- Churn signal: Not checked
 - Summary: The guide is very useful for orientation, but a few snippets look like simplified examples rather than exact current patterns. For example, the new-service package template uses `vitest` versions and a direct `db:migrate` script shape that may not match the root/package versions and mature service migration patterns.
-- Evidence: Weak evidence: root `package.json` declares `vitest` `^3.0.0`; `apps/docs/content/docs/guides/creating-new-service.mdx` shows `vitest` `^2.1.8` in the example. Existing services also have service-specific builders, connection classes, OpenAPI generation, and test patterns that are richer than the basic guide, but this pass did not inspect whether the guide is intentionally illustrative.
+- Evidence: Root `package.json` declares `vitest` `^3.0.0`; `apps/docs/content/docs/guides/creating-new-service.mdx` shows `vitest` `^2.1.8` in the example. Existing services also have service-specific builders, connection classes, OpenAPI generation, and test patterns that are richer than the basic guide.
 - Impact: This is not necessarily incorrect if the guide is intentionally illustrative, but it can slow new-service work or create small inconsistencies if copied literally.
-- Suggested next decisions: research or document whether the guide is a conceptual template or should keep snippets synchronized with current generated/service patterns.
+- Suggested next discussion: document whether the guide is a conceptual template or keep the snippets synchronized with current generated/service patterns.
 
 ## Coverage gaps
 
