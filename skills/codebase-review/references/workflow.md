@@ -60,7 +60,7 @@ Setup has its own approval gate. Before any setup inspection, tooling install, c
 - expected output artifacts;
 - the approval gate and no-mutation-before-approval rule.
 
-After the user approves the setup scope, run the bounded capability detection and setup-plan step from [Review setup](setup.md) before applying any changes. The plan must make the next setup decision clear: what already exists, what new repo-local docs/commands are recommended, what optional tooling could help, and what requires separate approval. CI and production changes are forbidden for this setup slice. If they appear necessary, ask for a separate explicit workflow instead of doing them.
+After the user approves the setup scope, run the bounded capability detection and setup-plan step from [Review setup](setup.md) before applying any changes. The plan must make the next setup decision clear: what already exists, what new repo-local docs/commands are recommended, what optional tooling could help, and what requires separate approval. If the user approves the setup plan, apply only the approved repo-local/dev review commands/docs/tooling. Normalized review command setup must select the runner in this exact precedence: existing Just, existing Make, existing npm/package scripts, then add Just if no runner exists and the user approved it. Commands should cover sizing, static checks, dependency/architecture checks, tests, coverage, and a reasonable aggregate review command where appropriate. CI and production dependency/config changes are forbidden for this setup workflow. If they appear necessary, ask for a separate explicit workflow instead of doing them.
 
 ## Intake and Interpreted Scope
 
