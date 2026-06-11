@@ -125,8 +125,8 @@ When setup adds or updates review commands, it must also add or update durable t
 Use this predictable selection rule unless the approved setup plan explicitly chooses a narrower existing repository convention:
 
 1. Prefer an existing `docs/codebase-review.md` file if present.
-2. Otherwise, create `docs/codebase-review.md` as the canonical setup documentation path, creating `docs/` if needed.
-3. If the repository already has an obvious equivalent developer/review command document (for example `docs/development.md`, `docs/testing.md`, `CONTRIBUTING.md`, or a README section dedicated to local quality commands), the setup plan may choose that existing location instead, but it must name the chosen path and why it is clearer than `docs/codebase-review.md`.
+2. Otherwise, if the repository already has an obvious equivalent developer/review command document (for example `docs/development.md`, `docs/testing.md`, `CONTRIBUTING.md`, or a README section dedicated to local quality commands), the setup plan may choose that existing location, but it must name the chosen path and why it is clearer than `docs/codebase-review.md`.
+3. If no clearer existing equivalent is chosen, create `docs/codebase-review.md` as the canonical setup documentation path, creating `docs/` if needed.
 4. If documentation is split across multiple existing files, still name one canonical setup documentation path and add pointers from or to related files only if approved.
 
 Do not hide the contract only in runner comments, package scripts, CI files, chat output, or a one-time setup summary. Runner comments may supplement the documentation but are not a substitute for the canonical setup documentation path.
