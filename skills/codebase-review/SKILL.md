@@ -31,7 +31,7 @@ Setup, discovery, and decision-making are separate. Setup starts with a setup-sp
 Load the smallest reference that matches the current step:
 
 - [Workflow](references/workflow.md) — when to use the skill, request classification, review intake/scope approval, setup entry point, supported review scope shapes, manual review flow, discovery side-effect boundary, out-of-scope behavior, and the verification checklist.
-- [Review setup](references/setup.md) — explicit setup request triggers, setup proposal template, pre-approval no-mutation rule, allowed/forbidden setup changes, and setup verification checklist.
+- [Review setup](references/setup.md) — explicit setup request triggers, setup proposal template, pre-approval no-mutation rule, post-approval repository capability detection, setup plan output, allowed/forbidden setup changes, and setup verification checklist.
 - [Discovery guidance](references/discovery.md) — bounded repository/context inspection and focused manual discovery procedure.
 - [Finding taxonomy](references/finding-taxonomy.md) — severity, confidence, evidence strength, churn signals, and weak-signal handling.
 - [Report and chat output contract](references/reporting.md) — report artifact path, minimum report contract, report skeleton, finding fields, decision queue, and concise chat summary format.
@@ -51,7 +51,7 @@ Do not use the review/discovery workflow for implementation, debugging a specifi
 
 1. **Classify the request first.** Decide whether the user is asking for review discovery or explicit review setup. If setup/tooling/documentation/commands are requested, load [Review setup](references/setup.md), present the setup proposal, and do not run review discovery.
 2. **Review intake first.** Before discovery begins, propose an interpreted review scope in chat and ask for go/no-go unless the user already gave explicit scope and approval in the same request. Include target, supported scope shape, focused manual depth, discovery actions, planned report path, and the side-effect boundary.
-3. **Setup intake first.** Before setup inspection or mutation begins, propose a setup scope in chat and ask for go/no-go. The proposal must name target repository, planned inspection, possible file/doc/command changes, forbidden production/CI changes, expected output artifacts, and the approval gate. Do not install tooling, add commands, edit docs, touch CI, or make other mutations before approval.
+3. **Setup intake first.** Before setup inspection or mutation begins, propose a setup scope in chat and ask for go/no-go. The proposal must name target repository, planned inspection, possible file/doc/command changes, forbidden production/CI changes, expected output artifacts, and the approval gate. Do not install tooling, add commands, edit docs, touch CI, or make other mutations before approval. After approval, run bounded repository capability detection and present a concrete setup plan before applying any setup changes.
 4. **Stay within approved scope.** Keep ambiguous requests small enough to complete manually. Prefer a narrow package, domain, workflow, concern, or dependency usage review over an unbounded deep review.
 5. **Run delegated cartography after review approval.** Once the initial review scope is approved, ask a subagent for a lightweight read-only cartography/sizing pass using the contract in [Workflow](references/workflow.md), including the relevant [subagent manifest](references/subagent-manifest.md) subset. Work from its summary and manifest; do not make the top-level orchestrator do deep raw-file archaeology itself.
 6. **Ask for a second go/no-go on the review plan.** Convert the cartography summary into a concise specialist review plan proposal before full specialist/manual review begins. Name review slices/lenses, expected artifacts, coverage gaps, and HITL questions. If the user rejects or adjusts it, revise the plan and ask again.
@@ -67,7 +67,7 @@ Do not use the review/discovery workflow for implementation, debugging a specifi
 ## Minimal run sequence
 
 1. Confirm the request fits this skill and classify it as review discovery or explicit review setup.
-2. **Setup path:** for setup requests, load [Review setup](references/setup.md), propose setup scope, and wait for go/no-go before any inspection or mutation. Continue only inside the approved setup scope, then stop unless the user starts a separate review workflow.
+2. **Setup path:** for setup requests, load [Review setup](references/setup.md), propose setup scope, and wait for go/no-go before any inspection or mutation. After approval, perform bounded capability detection, produce a setup plan, ask for the next approval when changes are recommended, and continue only inside the approved setup scope. Stop unless the user starts a separate review workflow.
 3. **Review path:** for review requests, propose interpreted scope and wait for go/no-go.
 4. Load [Workflow](references/workflow.md), delegate the cartography checkpoint, and keep the returned summary and manifest as the top-level map.
 5. Present a lightweight specialist review plan from the cartography summary and wait for the second go/no-go; revise and ask again if needed.
