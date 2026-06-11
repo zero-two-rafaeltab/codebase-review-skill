@@ -31,7 +31,7 @@ Setup, discovery, and decision-making are separate. Setup starts with a setup-sp
 Load the smallest reference that matches the current step:
 
 - [Workflow](references/workflow.md) — when to use the skill, request classification, review intake/scope approval, setup entry point, supported review scope shapes, manual review flow, discovery side-effect boundary, out-of-scope behavior, and the verification checklist.
-- [Review setup](references/setup.md) — explicit setup request triggers, setup proposal template, pre-approval no-mutation rule, post-approval repository capability detection, setup plan output, approved normalized review command application, allowed/forbidden setup changes, and setup verification checklist.
+- [Review setup](references/setup.md) — explicit setup request triggers, setup proposal template, pre-approval no-mutation rule, post-approval repository capability detection, setup plan output, approved normalized review command application, stable setup documentation contract, allowed/forbidden setup changes, and setup verification checklist.
 - [Discovery guidance](references/discovery.md) — bounded repository/context inspection and focused manual discovery procedure.
 - [Finding taxonomy](references/finding-taxonomy.md) — severity, confidence, evidence strength, churn signals, and weak-signal handling.
 - [Report and chat output contract](references/reporting.md) — report artifact path, minimum report contract, report skeleton, finding fields, decision queue, and concise chat summary format.

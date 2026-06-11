@@ -1,6 +1,6 @@
 # Review Setup Workflow
 
-Use this reference only when the user explicitly asks to set up codebase-review support for a repository. Setup is separate from review discovery/execution: it may add documentation, normalized review commands, or repo-local helper conventions, but only behind explicit approval gates. First get approval for a setup-specific scope proposal; after that approval, perform bounded repository capability detection and present a concrete setup plan; only after the user approves that plan may you add or update repo-local/dev review commands and documentation.
+Use this reference only when the user explicitly asks to set up codebase-review support for a repository. Setup is separate from review discovery/execution: it may add documentation, normalized review commands, or repo-local helper conventions, but only behind explicit approval gates. First get approval for a setup-specific scope proposal; after that approval, perform bounded repository capability detection and present a concrete setup plan; only after the user approves that plan may you add or update repo-local/dev review commands and stable setup documentation.
 
 ## Setup Request Triggers
 
@@ -116,6 +116,66 @@ Use aliases that match the target runner's naming style when the repository alre
 
 Aggregate commands should make future reviews less ad hoc without hiding diagnostic failures. A non-zero exit from lint, tests, dependency checks, or coverage is useful review signal; document that setup success means the command executes and produces diagnostic output, not that the repository passes every check.
 
+## Stable Setup Documentation Contract
+
+When setup adds or updates review commands, it must also add or update durable target-repository setup documentation. This documentation explains the review command surface and setup boundaries without committing raw command baselines that will go stale.
+
+### Documentation location selection
+
+Use this predictable selection rule unless the approved setup plan explicitly chooses a narrower existing repository convention:
+
+1. Prefer an existing `docs/codebase-review.md` file if present.
+2. Otherwise, create `docs/codebase-review.md` as the canonical setup documentation path, creating `docs/` if needed.
+3. If the repository already has an obvious equivalent developer/review command document (for example `docs/development.md`, `docs/testing.md`, `CONTRIBUTING.md`, or a README section dedicated to local quality commands), the setup plan may choose that existing location instead, but it must name the chosen path and why it is clearer than `docs/codebase-review.md`.
+4. If documentation is split across multiple existing files, still name one canonical setup documentation path and add pointers from or to related files only if approved.
+
+Do not hide the contract only in runner comments, package scripts, CI files, chat output, or a one-time setup summary. Runner comments may supplement the documentation but are not a substitute for the canonical setup documentation path.
+
+### Required documentation contents
+
+The canonical setup documentation must record:
+
+- **Command purpose:** each normalized review command or documented existing command and what review question it helps answer.
+- **Runner invocation:** the exact local invocation a reviewer should run, using the selected runner or package manager prefix (for example `just review-static`, `make review-test`, or `pnpm run review:coverage`).
+- **Diagnostic interpretation:** how to read command results, including that non-zero exits or reported findings are review signals, not proof that setup failed. Setup success means commands execute and emit useful diagnostic output.
+- **Known limitations:** unsupported capabilities, expensive commands that were intentionally omitted from aggregates, flaky/unavailable tooling, partial coverage, ambiguous package-manager/framework detection, or manual review steps that remain necessary.
+- **Intentionally skipped areas:** explicit setup boundaries such as no production code changes, no production dependency changes, no runtime/deployment/secrets changes, no raw baseline snapshots, and no CI modifications.
+- **CI policy:** whether CI was detected if that was part of approved lightweight inspection, how these commands could be considered for future CI integration, and that setup did not create or modify CI. CI changes require a separate explicit approval workflow.
+- **Command status table:** a durable status table or template summarizing command coverage and setup verification without embedding raw outputs.
+
+### Command status table/template
+
+Include a table like this in the canonical setup documentation and adapt the rows to the approved command set:
+
+```markdown
+| Capability | Command | Purpose | Setup status | How to interpret diagnostics | Limitations / skipped areas |
+| --- | --- | --- | --- | --- | --- |
+| Sizing | `<runner> review-size` | Estimate repository/review surface area. | configured / documented / not configured | Counts or size summaries are orientation data, not a pass/fail baseline. | Do not commit raw counts as durable baselines; rerun when needed. |
+| Static checks | `<runner> review-static` | Run existing lint/typecheck/static analysis signals. | configured / documented / not configured | Findings or non-zero exits are review signals to inspect. | Uses only existing approved tooling; no production dependency changes. |
+| Dependency/architecture | `<runner> review-deps` | Surface dependency, import-boundary, architecture, audit, or manual dependency-review signals. | configured / documented / not configured | Treat warnings/errors as candidates for manual review. | Document missing safe tooling or manual-only coverage honestly. |
+| Tests | `<runner> review-test` | Run existing test diagnostics relevant to review. | configured / documented / not configured | Failures indicate behavior or environment signals to investigate. | Expensive or environment-dependent suites may be omitted from aggregates. |
+| Coverage | `<runner> review-coverage` | Produce coverage diagnostics from existing tooling when available. | configured / documented / not configured | Coverage values are current diagnostics, not committed setup baselines. | Mark unavailable coverage as not configured rather than inventing it. |
+| Aggregate review | `<runner> review` | Run the safe configured review commands in one local workflow. | configured / documented / not configured | Aggregate failure preserves underlying diagnostic failure; inspect individual command output. | Excludes unsupported, destructive, expensive, or separately approved-only steps. |
+```
+
+The setup application summary may reuse this table shape with concrete command names and statuses. Keep it concise in chat and point to the canonical documentation for durable details.
+
+### Durable-output rules
+
+- Do not commit raw command stdout/stderr, current warning lists, coverage percentages, file counts, dependency audit dumps, snapshots, or other volatile baselines as part of stable setup documentation.
+- Do document command intent, invocation, expected categories of diagnostics, and how a future reviewer should rerun commands.
+- If verification output is useful for the current setup handoff, include it in the chat/application summary or a transient setup note only when approved, not as a durable baseline committed to the target repository.
+- If the target repository already has stale raw baseline sections, do not update them as part of this setup slice; list cleanup as a separate follow-up unless the approved plan explicitly includes it.
+
+### CI policy for setup documentation
+
+Setup may document CI policy but must not modify CI:
+
+- If no CI files are detected during approved lightweight inspection, state that setup did not create CI and that future CI integration requires separate approval.
+- If CI exists, state whether the normalized commands appear suitable for future CI consideration, but do not edit workflows, required checks, badges, branch protections, or deployment automation.
+- If CI suitability is unknown because setup did not inspect CI or commands are too expensive/environment-dependent, say so directly.
+- Any CI integration, required-check policy, cache/dependency install behavior, or workflow-matrix change is outside this setup workflow unless a later separately approved workflow explicitly targets CI.
+
 ## Setup Plan Output
 
 After capability detection and before applying changes, present a concrete setup plan. Keep it concise but decision-ready:
@@ -137,6 +197,8 @@ After capability detection and before applying changes, present a concrete setup
 
 - Existing commands to reuse/document: <commands already present; include runner/package-manager prefix and source evidence>
 - Recommended new normalized commands: <planned Just/Make/package-script recipes/targets/scripts, applying runner precedence; say "none" if not needed>
+- Stable setup documentation path: <canonical path from the documentation location selection rule, usually docs/codebase-review.md, and why>
+- Documentation contents to add/update: <command purposes, runner invocations, diagnostic interpretation, known limitations, intentionally skipped areas, command status table, and CI policy>
 - Optional repo-local/dev tooling additions: <candidate docs/templates/helper files/dev dependencies; mark optional and do not install yet>
 - Items requiring separate approval: <dependency installs, CI changes, production/config changes, broader migrations, review execution, issue/ADR/commit creation, or "none">
 - Proposed files to create/edit: <paths and one-line purpose, or "none">
@@ -157,8 +219,9 @@ After the user approves the setup plan, you may add or update the approved repo-
 4. Reuse existing commands and tools whenever possible. Prefer wrapper aliases over new tools.
 5. Do not change production dependencies, runtime manifests, deployment config, secrets, or CI. Do not move dependencies from dev/review-only scope into production scope.
 6. Add new tooling only when it is repo-local or dev/review-only, was listed in the setup plan, and was explicitly approved. Examples: a small `Justfile`, a `scripts/review-*` helper, review documentation, or a dev-only package script that wraps already-present tooling. Package-manager installs or lockfile changes require the user's explicit approval for those exact dev/review-only changes.
-7. Document any repo-local/dev review-only additions in the edited runner file comments where practical and/or in the setup docs path from the approved plan.
-8. Verify edited command definitions for syntax/parseability when cheap, and run only the approved lightweight verification commands. If running the full aggregate review would be expensive or destructive, verify with dry-run/list/parse checks and say so.
+7. Add or update the canonical setup documentation path from the approved plan using the [Stable Setup Documentation Contract](#stable-setup-documentation-contract). Record command purposes, runner invocations, diagnostic interpretation, limitations, intentionally skipped areas, command status table/template, and CI policy; do not commit raw command outputs or volatile baselines.
+8. Document any repo-local/dev review-only additions in the edited runner file comments where practical and in the setup docs path from the approved plan.
+9. Verify edited command definitions and the setup documentation for syntax/parseability when cheap, and run only the approved lightweight verification commands. If running the full aggregate review would be expensive or destructive, verify with dry-run/list/parse checks and say so.
 
 ### Runner edit templates
 
@@ -242,6 +305,7 @@ After applying approved setup changes, reply with:
 - Approval applied: <what the user approved, including any subset limits>
 - Runner selected: <Just | Make | package scripts | newly added Just>, based on <evidence>
 - Commands added/updated: <review, review-size, review-static, review-deps, review-test, review-coverage, with unsupported/skipped items called out>
+- Stable setup docs: <canonical path, command status table coverage, limitations/skipped areas, and CI policy captured>
 - Files changed: <paths and purpose>
 - Dev/review-only boundary: <state that no production dependencies/config/CI were changed, or call out any separately approved dev/review-only changes>
 - Verification run: <parse/list/dry-run/full command outputs or why skipped>
@@ -265,9 +329,16 @@ After applying approved setup changes, reply with:
 - [ ] Runner planning applied the exact precedence: existing Just, existing Make, existing npm/package scripts, then add Just if no runner exists and the user approved it.
 - [ ] A setup plan was produced before applying changes.
 - [ ] The setup plan distinguished existing commands, recommended new commands, optional repo-local/dev tooling additions, and items requiring separate approval.
+- [ ] The setup plan named the stable setup documentation path using the documented location selection rule.
+- [ ] The setup plan named documentation contents covering command purpose, runner invocation, diagnostic interpretation, known limitations, intentionally skipped areas, command status table, and CI policy.
 - [ ] No setup plan changes were applied until the user approved the setup plan.
 - [ ] Approved normalized command changes used the exact precedence: existing Just, existing Make, existing npm/package scripts, then add Just if no runner exists and the user approved it.
 - [ ] Approved command aliases covered sizing, static checks, dependency/architecture checks, tests, coverage, and a reasonable aggregate review command where appropriate, or documented unsupported capabilities honestly.
+- [ ] The canonical setup documentation was added or updated when commands/docs were approved.
+- [ ] Setup documentation included a command status table/template suitable for setup output.
+- [ ] Setup documentation described diagnostic interpretation and documented unsupported, expensive, unavailable, or intentionally skipped areas honestly.
+- [ ] Setup documentation captured CI policy while leaving CI unmodified.
+- [ ] Raw command stdout/stderr, coverage percentages, file counts, audit dumps, snapshots, or other volatile baselines were not committed as durable setup baselines.
 - [ ] Repo-local/dev review-only additions were documented as such.
 - [ ] Production dependencies, runtime config, deployment config, secrets, and CI were not changed.
 - [ ] Detection failures or unknowns were reported as setup context rather than silently guessed.
