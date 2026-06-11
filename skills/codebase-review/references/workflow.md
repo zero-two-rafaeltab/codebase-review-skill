@@ -1,12 +1,12 @@
 # Codebase Review Workflow
 
-Use this reference for intake, scope approval, side-effect boundaries, and the end-to-end manual review sequence.
+Use this reference for request classification, review intake, setup entry point handoff, scope approval, side-effect boundaries, and the end-to-end manual review sequence.
 
 ## When to Use
 
-Use this skill when the user asks for a codebase health, architecture, maintainability, refactoring-opportunity, pain-spot, or risk review.
+Use this skill when the user asks for either a codebase health review or explicit setup of codebase-review support for a repository. Classify the request before doing inspection.
 
-Typical trigger phrases include:
+Review trigger phrases include:
 
 - "review this codebase";
 - "look for architecture risks";
@@ -15,12 +15,22 @@ Typical trigger phrases include:
 - "where are the testing or documentation gaps?";
 - "inspect this package/domain/workflow/dependency usage."
 
+Setup trigger phrases include:
+
+- "set up codebase review for this repo";
+- "prepare this repository for future codebase reviews";
+- "add review docs/commands/templates";
+- "configure/install review tooling";
+- "create a repo convention for codebase-review reports or manifests."
+
+When setup/tooling/documentation/command language is present, use the setup entry point below and [Review setup](setup.md) instead of starting review discovery.
+
 Do not use this workflow for:
 
 - implementing a requested code change;
 - debugging a specific failing test or production bug;
 - reviewing a PR diff as a code reviewer;
-- automated setup of review tooling;
+- automated setup of review tooling during review discovery;
 - complex delegated review planning beyond the approved lightweight specialist review plan;
 - language-specific review playbooks;
 - CI integration;
@@ -28,11 +38,35 @@ Do not use this workflow for:
 
 Those are separate workflows.
 
+## Request Classification
+
+Before proposing scope, decide whether the user is asking for review discovery or review setup:
+
+- **Review discovery:** the user wants analysis of architecture, maintainability, refactoring opportunities, pain spots, tests/docs gaps, risks, workflows, domains, modules, horizontal concerns, or dependency usage. Continue with [Intake and Interpreted Scope](#intake-and-interpreted-scope).
+- **Review setup:** the user wants repository support for future reviews, such as docs, commands, report conventions, templates, or tooling setup. Do not start discovery. Load [Review setup](setup.md), present the setup-specific proposal, and wait for approval before inspection or mutation.
+- **Both in one request:** start with setup only. Treat the health review itself as a later, separately approved workflow after setup is complete or explicitly skipped.
+
+If a discovery request later asks to add tooling, commands, docs, CI, or repository setup, stop the discovery flow and move to a separate setup intake after completing or pausing the review.
+
+## Review Setup Entry Point
+
+Setup has its own approval gate. Before any setup inspection, tooling install, command addition, docs edit, CI change, or other mutation, present the setup proposal from [Review setup](setup.md). The proposal must name:
+
+- target repository;
+- planned lightweight inspection;
+- possible file, documentation, or command changes;
+- forbidden production, deployment, secrets, dependency-install, and CI changes;
+- planned documentation or command artifacts;
+- expected output artifacts;
+- the approval gate and no-mutation-before-approval rule.
+
+CI and production changes are forbidden for this setup slice. If they appear necessary, ask for a separate explicit workflow instead of doing them.
+
 ## Intake and Interpreted Scope
 
 Before discovery work begins, propose an interpreted scope in chat and ask the user for go/no-go. Do not start expensive reading, command execution, report writing, or subagent work until the user approves.
 
-The scope proposal should be short and explicit:
+The review scope proposal should be short and explicit:
 
 ```text
 Proposed review scope:
@@ -41,7 +75,7 @@ Proposed review scope:
 - Review depth: focused manual pass
 - Discovery actions: after approval, delegate lightweight cartography, present a concise specialist review plan for a second go/no-go, then read files/docs and run safe inspection commands only as needed
 - Report artifact: <planned report path>
-- Side-effect boundary: no code changes, commits, issues, ADRs, or PR comments during discovery
+- Side-effect boundary: no code changes, setup/tooling installs, command additions, docs edits, CI changes, commits, issues, ADRs, or PR comments during discovery
 
 Go/no-go?
 ```
@@ -66,7 +100,7 @@ Keep ambiguous requests small enough to complete manually. Prefer a narrow packa
 
 ## Manual Review Flow
 
-1. **Identify whether this workflow applies.** Confirm the request is a codebase health, architecture, maintainability, refactoring, pain-spot, or risk review rather than implementation/debugging.
+1. **Identify whether this workflow applies.** Confirm the request is a codebase health, architecture, maintainability, refactoring, pain-spot, or risk review rather than implementation/debugging. If it is a setup request, use the setup entry point and do not continue into review discovery.
 2. **Propose an interpreted scope.** Name the target, scope shape, depth, expected artifact path, and discovery side-effect boundary.
 3. **Ask for go/no-go before discovery.** Wait for approval before expensive review work. If the user rejects the proposal, adjust and ask again.
 4. **Delegate the cartography checkpoint.** After approval, ask a subagent for a lightweight read-only cartography/sizing pass over the approved scope using the output contract below and the relevant subagent manifest subset. This is the required delegated cartography pass for this workflow.
@@ -186,6 +220,7 @@ Allowed during discovery:
 Not allowed during discovery:
 
 - code edits;
+- documentation edits or command additions;
 - commits or branches;
 - GitHub issues;
 - ADRs or durable project decisions;
@@ -214,6 +249,7 @@ Do not expand a manual discovery review into other behavior unless the user expl
 ## Verification Checklist
 
 - [ ] The request matched a codebase health review trigger rather than implementation/debugging.
+- [ ] Setup/tooling/docs/commands language was classified as setup and routed to the setup entry point instead of discovery.
 - [ ] The interpreted scope was proposed before discovery.
 - [ ] The scope proposal used one of the supported scope shapes.
 - [ ] User go/no-go was received before discovery.
@@ -234,7 +270,7 @@ Do not expand a manual discovery review into other behavior unless the user expl
 - [ ] Conflicting or uncertain specialist outputs preserved uncertainty, cited sources, and avoided overstating confidence.
 - [ ] Discovery stayed read-only except for the report artifact.
 - [ ] No issues, ADRs, commits, PR comments, or code changes were created during discovery.
-- [ ] No setup, extra sizing/mapping, language-playbook, advanced synthesis, complex delegated review plan beyond the approved lightweight plan, or CI workflow was introduced.
+- [ ] No setup, tooling install, command addition, docs edit, extra sizing/mapping, language-playbook, advanced synthesis, complex delegated review plan beyond the approved lightweight plan, or CI workflow was introduced during discovery.
 - [ ] A basic report file was written.
 - [ ] The report overview used severity counts instead of an arbitrary overall health status.
 - [ ] The report overview linked or pointed to individual finding details using stable finding IDs, heading anchors, or section links.
