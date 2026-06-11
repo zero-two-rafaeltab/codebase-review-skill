@@ -67,7 +67,7 @@ Do not use the review/discovery workflow for implementation, debugging a specifi
 ## Minimal run sequence
 
 1. Confirm the request fits this skill and classify it as review discovery or explicit review setup.
-2. **Setup path:** for setup requests, load [Review setup](references/setup.md), propose setup scope, and wait for go/no-go before any inspection or mutation. After approval, perform bounded capability detection, produce a setup plan, ask for the next approval when changes are recommended, and continue only inside the approved setup scope. Stop unless the user starts a separate review workflow.
+2. **Setup path:** for setup requests, load [Review setup](references/setup.md), propose setup scope, and wait for go/no-go before any inspection or mutation. After approval, perform bounded capability detection, produce a setup plan, and stop at the next setup decision; do not apply file, documentation, tooling, or command changes in this planning slice. Stop unless the user starts a separate review workflow.
 3. **Review path:** for review requests, propose interpreted scope and wait for go/no-go.
 4. Load [Workflow](references/workflow.md), delegate the cartography checkpoint, and keep the returned summary and manifest as the top-level map.
 5. Present a lightweight specialist review plan from the cartography summary and wait for the second go/no-go; revise and ask again if needed.

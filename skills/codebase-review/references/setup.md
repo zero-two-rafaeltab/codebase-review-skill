@@ -62,16 +62,16 @@ After approval, keep setup work narrowly tied to the proposal:
 - run the bounded repository capability detection below and report unknowns instead of guessing;
 - produce the setup plan below before adding/editing docs, commands, templates, or tooling configuration;
 - prefer repository-local docs and command conventions that already exist;
-- make only the file/doc/command changes approved after the setup plan is presented;
+- stop after presenting the setup plan and next approval question; actual file/doc/command changes are deferred to a later explicitly approved setup-application workflow;
 - keep production code, CI, deployment, secrets, and unrelated tooling out of scope;
-- summarize exactly what changed and how to use it;
+- summarize the setup plan, approval status, deferred changes, and how the proposed commands/docs would be used;
 - do not run a health review as part of setup unless the user starts the separate review workflow.
 
 If setup reveals that a dependency install, CI change, production change, or broader migration would be useful, stop and ask for a separate explicit approval workflow instead of doing it.
 
 ## Bounded Repository Capability Detection
 
-Run this detection only after the setup scope is approved. Keep it lightweight and evidence-based: inspect manifests, runner files, obvious README/docs/setup files, repository metadata, and cheap file-name/path signals. Do not run tests, builds, package installs, dependency resolution, broad source archaeology, or framework-specific deep analysis unless the approved setup scope explicitly allowed that inspection.
+Run this detection only after the setup scope is approved. Keep it lightweight and evidence-based: inspect manifests, runner files, obvious README/docs/setup files, repository metadata, and cheap file-name/path signals. Do not run tests, builds, package installs, dependency resolution, broad source archaeology, or framework-specific deep analysis during this detection slice. If those actions seem necessary, list them under items requiring separate approval instead of performing them.
 
 Detect and cite evidence for:
 
@@ -92,7 +92,7 @@ When planning candidate review commands, apply this precedence:
 1. **Just first:** if a `Justfile` or `.justfile` exists, prefer adding or documenting normalized `just` recipes such as `just review`, `just review-test`, `just review-lint`, `just review-typecheck`, or narrower names that fit existing recipe style.
 2. **Make second:** if no Just runner exists but a `Makefile` exists, prefer `make` targets with the repository's existing naming style.
 3. **npm/package scripts third:** if neither Just nor Make exists but `package.json` scripts or equivalent package-manager scripts exist, prefer package scripts and the detected package manager invocation (`npm run`, `pnpm run`, `yarn`, `bun run`) based on lockfiles/docs.
-4. **Propose adding Just when no runner exists:** if no suitable runner exists, recommend adding a small repo-local `Justfile` as the normalized review command surface. This is a plan item only; do not create it until the user approves the plan.
+4. **Propose adding Just when no runner exists:** if no runner exists at all, recommend adding a small repo-local `Justfile` as the normalized review command surface. This is a plan item only; do not create it in this planning slice.
 
 Do not overwrite or rename existing commands in this slice. If multiple runners already exist, recommend the highest-precedence runner for normalized review commands while noting lower-precedence existing commands as supporting evidence or compatibility options.
 
@@ -125,7 +125,7 @@ After capability detection and before applying changes, present a concrete setup
 
 The setup plan must distinguish existing commands from recommended new commands. It must also separate optional tooling from items that require separate approval. If detection is inconclusive, include the uncertainty in the plan and choose the lowest-risk next step rather than guessing.
 
-Do not apply plan changes until the user approves the setup plan. If the user approves only part of the plan, apply only that part and leave the rest as deferred or requiring separate approval.
+Do not apply plan changes in this slice. If the user approves all or part of the plan, record what was approved as the next intended setup action and defer actual changes to a later explicitly approved setup-application workflow.
 
 ## Setup Verification Checklist
 
