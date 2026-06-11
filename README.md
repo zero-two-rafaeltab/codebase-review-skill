@@ -2,7 +2,7 @@
 
 This repository contains the goal documents for a local Hermes skill that supports explicit codebase health reviews, plus an installable skill package.
 
-The current implementation provides a focused manual review workflow, report/finding output guidance, and a setup workflow for preparing repositories with durable review documentation and normalized local review commands.
+The current implementation provides a focused manual review workflow, report/finding output guidance, and a setup workflow for preparing repositories with durable review documentation, normalized local review commands, and concise setup verification classifications.
 
 ## Install locally
 
