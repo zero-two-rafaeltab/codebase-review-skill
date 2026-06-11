@@ -220,7 +220,7 @@ review-coverage:
 ```json
 {
   "scripts": {
-    "review": "npm run review:size && npm run review:static && npm run review:deps && npm run review:test && npm run review:coverage",
+    "review": "<package-manager run> review:size && <package-manager run> review:static && <package-manager run> review:deps && <package-manager run> review:test && <package-manager run> review:coverage",
     "review:size": "git ls-files | wc -l",
     "review:static": "<existing lint/typecheck/static command>",
     "review:deps": "<existing dependency/architecture command or documented placeholder>",
@@ -230,7 +230,7 @@ review-coverage:
 }
 ```
 
-For package scripts, preserve existing script names and JSON formatting as much as possible. Use the detected package manager invocation in documentation (`npm run`, `pnpm run`, `yarn`, or `bun run`), but the script entries themselves should remain package-manager-neutral where possible.
+For package scripts, preserve existing script names and JSON formatting as much as possible. When adapting the aggregate script, replace `<package-manager run>` with the detected package-manager invocation (`npm run`, `pnpm run`, `yarn`, or `bun run`) based on lockfiles/docs; if uncertain, document the uncertainty in the setup plan instead of defaulting silently to npm.
 
 ### Application summary output
 
